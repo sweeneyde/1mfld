@@ -12,3 +12,17 @@ instance : Topological1Manifold ℝ := {
     use Homeomorph.toPartialHomeomorph h'
     simp only [Homeomorph.toPartialHomeomorph_source, Set.mem_univ]
 }
+
+instance : Topological1Manifold circle := {
+  locally_euclidean := by
+    sorry
+}
+
+def unit_interval := Set.Ioo (0 : ℝ) (1 : ℝ)
+
+instance : Topological1Manifold unit_interval := {
+  locally_euclidean := by
+    intro x
+    -- use Real.tanLocalHomeomorph
+    sorry
+}
