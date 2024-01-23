@@ -79,8 +79,6 @@ instance : Topological1Manifold I := {
       left_inv' := by
         intro x xI
         rw [rev_embed_I, embed_I]
-        -- have 0 < x := by
-        -- rw [I, Set.Ioo] at x
         have zero_lt_x : (0 : ℝ) < x := by exact Set.Ioo.pos x
         have x_lt_one : x < (1 : ℝ) := by exact Set.Ioo.lt_one x
         rw [← not_le] at zero_lt_x
@@ -109,14 +107,6 @@ instance : Topological1Manifold I := {
         intro b bI ε εpos
         let δ := min ε (min b (1 - b))
         have δleε : δ ≤ ε := min_le_left ε _
-        -- have δleb : δ ≤ b := by
-        --   calc
-        --     δ ≤ min b (1 - b) := min_le_right ε _
-        --     _ ≤ b := min_le_left b (1 - b)
-        -- have δle1subb : δ ≤ 1 - b := by
-        --   calc
-        --     δ ≤ min b (1 - b) := min_le_right ε _
-        --     _ ≤ 1 - b := min_le_right b (1 - b)
         rw [I, Set.Ioo] at bI
         dsimp at bI
         have δpos : (0:ℝ) < δ := by
