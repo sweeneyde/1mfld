@@ -21,81 +21,42 @@ instance : Topological1Manifold circle := {
 
 noncomputable section
 
-def I := Set.Ioo (0 : ℝ) (1 : ℝ)
-def embed_I : I → ℝ := (↑)
-def Qhalf : ℚ := 1 / 2
-def half : ℝ := Rat.cast Qhalf
-
-lemma half_lt_one : half < (1 : ℝ) := by
-  have h : (Qhalf < (1 : ℚ)) := by rw [Qhalf]; norm_num
-  have h' : Rat.cast Qhalf < Rat.cast (1 : ℚ) := by rw [Real.ratCast_lt]; exact h
-  calc
-    half = Rat.cast Qhalf := rfl
-    _ < Rat.cast (1 : ℚ) := h'
-    _ = (1 : ℝ) := by rw [Rat.cast_one]
-
-lemma zero_lt_half : (0 : ℝ) < half := by
-  have h : ((0 : ℚ) < Qhalf) := by rw [Qhalf]; norm_num
-  have h' : Rat.cast (0 : ℚ) < Rat.cast Qhalf := by rw [Real.ratCast_lt]; exact h
-  calc
-    (0 : ℝ) = Rat.cast (0 : ℚ) := by rw [Rat.cast_zero]
-    _ < Rat.cast Qhalf := h'
-    _ = half := by rfl
-
-lemma half_in_I : half ∈ I := by
-  rw [I, Set.Ioo]
-  dsimp
-  exact ⟨zero_lt_half, half_lt_one⟩
-
-def rev_embed_I : ℝ → I := by
-  intro x
-  by_cases xgt1: 1 ≤ x
-  . use half
-    exact half_in_I
-  . by_cases xlt0: x ≤ 0
-    . use half
-      exact half_in_I
-    . use x
-      rw [I, Set.Ioo]
-      dsimp
-      rw [not_le] at *
-      exact ⟨xlt0, xgt1⟩
-
-
-instance : Topological1Manifold I := {
+instance : Topological1Manifold (Set.Ioo (0 : ℝ) (1 : ℝ)) := {
   locally_euclidean := by
+    let I := Set.Ioo (0 : ℝ) (1 : ℝ)
+    let rev_embed_I : ℝ → I := by
+      intro x
+      by_cases xI : x ∈ I
+      . use x
+      . have h: ∃x, x ∈ I := by
+          rw [← Set.Nonempty, Set.nonempty_Ioo]
+          norm_num
+        exact Classical.subtype_of_exists h
+
     let h' : PartialHomeomorph I ℝ := {
-      toFun := embed_I
+      toFun := (↑)
       invFun := rev_embed_I
       source := (Set.univ : Set I)
       target := (I : Set ℝ)
       map_source' := by
-        intro x xI
-        rw [embed_I]
+        intro x _
         apply Subtype.coe_prop
       map_target' := by
-        intro x xI
+        intro x _
         trivial
       left_inv' := by
-        intro x xI
-        rw [rev_embed_I, embed_I]
-        have zero_lt_x : (0 : ℝ) < x := Set.Ioo.pos x
-        have x_lt_one : x < (1 : ℝ) := Set.Ioo.lt_one x
-        rw [← not_le] at zero_lt_x
-        rw [← not_le] at x_lt_one
+        intro x _
+        dsimp
         split
-        . contradiction
         . simp only [Subtype.coe_eta]
+        . have : ↑x ∈ I := by exact Subtype.mem x
+          contradiction
       right_inv' := by
         intro x xI
-        rw [rev_embed_I, embed_I]
-        rw [I, Set.Ioo] at xI
-        dsimp at xI
+        dsimp
         split
-        . linarith
-        split
-        . linarith
         . dsimp
+        . contradiction
       open_source := isOpen_univ
       open_target := isOpen_Ioo
       continuousOn_toFun := by
@@ -106,18 +67,17 @@ instance : Topological1Manifold I := {
         rw [continuousOn_iff_continuous_restrict]
         have eq : Set.restrict I rev_embed_I = id := by
           ext x
-          rw [Set.restrict_apply, id_eq, rev_embed_I]
+          rw [Set.restrict_apply, id_eq]
+          dsimp
           split
-          . linarith [Set.Ioo.lt_one x]
-          split
-          . linarith [Set.Ioo.pos x]
           . dsimp
+          . have : ↑x ∈ I := by exact Subtype.mem x
+            contradiction
         rw [eq]
         exact continuous_id
     }
     intro x
     use h'
-    dsimp
     show x ∈ Set.univ
     trivial
 }
