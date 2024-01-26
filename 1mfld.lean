@@ -79,8 +79,8 @@ instance : Topological1Manifold I := {
       left_inv' := by
         intro x xI
         rw [rev_embed_I, embed_I]
-        have zero_lt_x : (0 : ℝ) < x := by exact Set.Ioo.pos x
-        have x_lt_one : x < (1 : ℝ) := by exact Set.Ioo.lt_one x
+        have zero_lt_x : (0 : ℝ) < x := Set.Ioo.pos x
+        have x_lt_one : x < (1 : ℝ) := Set.Ioo.lt_one x
         rw [← not_le] at zero_lt_x
         rw [← not_le] at x_lt_one
         split
@@ -103,34 +103,17 @@ instance : Topological1Manifold I := {
         exact continuous_induced_dom
       continuousOn_invFun := by
         dsimp
-        refine Metric.continuousOn_iff.mpr ?_
-        intro b bI ε εpos
-        let δ := min ε (min b (1 - b))
-        have δleε : δ ≤ ε := min_le_left ε _
-        rw [I, Set.Ioo] at bI
-        dsimp at bI
-        have δpos : (0:ℝ) < δ := by
-          apply lt_min
-          exact εpos
-          apply lt_min
-          linarith
-          linarith
-        use δ
-        constructor
-        . exact δpos
-        intro a aI a_close_b
-        rw [I, Set.Ioo] at aI
-        dsimp at aI
-        repeat
-          rw [rev_embed_I]
+        rw [continuousOn_iff_continuous_restrict]
+        have eq : Set.restrict I rev_embed_I = id := by
+          ext x
+          rw [Set.restrict_apply, id_eq, rev_embed_I]
           split
-          . linarith
+          . linarith [Set.Ioo.lt_one x]
           split
-          . linarith
-        rw [Subtype.dist_eq]
-        rw [Real.dist_eq] at *
-        dsimp
-        linarith
+          . linarith [Set.Ioo.pos x]
+          . dsimp
+        rw [eq]
+        exact continuous_id
     }
     intro x
     use h'
