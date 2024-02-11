@@ -30,7 +30,7 @@ variable
 structure NiceChart (φ : PartialHomeomorph M NNReal) where
   in_atlas : φ ∈ ht.atlas
   bounded : Bornology.IsBounded φ.target
-  connected : ConnectedSpace φ.target
+  connected : IsConnected φ.target
 
 structure PairOfCharts (φ ψ : PartialHomeomorph M NNReal) where
   nice_φ : NiceChart φ
@@ -43,6 +43,8 @@ def intersection
   {φ ψ : PartialHomeomorph M NNReal}
   (_ : PairOfCharts φ ψ) :=
   φ.restrOpen (ψ.source) (ψ.open_source)
+
+instance : LocallyConnectedSpace Real := by infer_instance
 
 instance : LocallyConnectedSpace NNReal := by
   rw [locallyConnectedSpace_iff_connected_subsets]
@@ -186,20 +188,119 @@ instance : LocallyConnectedSpace NNReal := by
     rw [Set.Ioo]
     exact aV
 
-lemma lemma01a
+def endpoint
+  (S : Set NNReal) (a : NNReal) :=
+  (↑a : ℝ) ∈ frontier ((↑) '' S : Set ℝ)
+
+lemma frontier_intersection_sub_union_frontiers
+  {X : Type} [TopologicalSpace X] (A B : Set X)
+  : frontier (A ∩ B) ⊆ frontier A ∪ frontier B := by
+  calc
+    frontier (A ∩ B)
+    ⊆ frontier A ∩ closure B ∪ closure A ∩ frontier B
+      := frontier_inter_subset A B
+    _ ⊆ frontier A ∪ frontier B
+      := Set.union_subset_union
+          (Set.inter_subset_left (frontier A) (closure B))
+          (Set.inter_subset_right (closure A) (frontier B))
+
+section
+variable
   (φ ψ : PartialHomeomorph M NNReal)
   (pair : PairOfCharts φ ψ)
-  (x : (intersection pair).target)
-  (ha : a ∈ (frontier (connectedComponentIn φ.target x))) :
-  (a ∉ connectedComponentIn φ.target x) := by
-    let I := φ.target
-    let K := connectedComponentIn I x
-    show a ∉ K
-    have : IsOpen K := IsOpen.connectedComponentIn φ.open_target
 
-    sorry
+def U : Set M := φ.source
+def V : Set M := ψ.source
+def I : Set NNReal := φ.target
+def J : Set NNReal := ψ.target
+def UV := φ.source ∩ ψ.source
+def φ_UV := φ.restrOpen (ψ.source) (ψ.open_source)
+def ψ_UV := ψ.restrOpen (φ.source) (φ.open_source)
 
-end section
+lemma sourceφ_UV : (φ_UV φ ψ).source = (UV φ ψ) := rfl
+lemma sourceψ_UV : (ψ_UV φ ψ).source = (UV φ ψ) := by
+  have : (UV φ ψ) = (UV ψ φ) := by
+    rw [UV, UV]
+    exact Set.inter_comm φ.source ψ.source
+  exact id this.symm
+
+def α := PartialHomeomorph.trans (PartialHomeomorph.symm φ) ψ
+lemma I_connected : IsConnected (I φ) := pair.nice_φ.connected
+lemma J_connected : IsConnected (J ψ) := pair.nice_ψ.connected
+lemma U_homeo_I : (U φ) ≃ₜ (I φ) := PartialHomeomorph.toHomeomorphSourceTarget φ
+lemma V_homeo_J : (V ψ) ≃ₜ (J ψ) := U_homeo_I ψ
+
+section
+
+variable
+  (x : (φ_UV φ ψ).target)
+
+def K := connectedComponentIn (φ_UV φ ψ).target x
+
+lemma K_subset_I : K φ ψ x ⊆ I φ := by calc
+  (K φ ψ x) ⊆ (φ_UV φ ψ).target := by
+    rw [K]
+    exact connectedComponentIn_subset (φ_UV φ ψ).toPartialEquiv.target ↑x
+  _ ⊆ I φ := by
+    rw [φ_UV, I]
+    simp only [PartialHomeomorph.restrOpen_toPartialEquiv, PartialEquiv.restr_target,
+      PartialHomeomorph.coe_coe_symm, Set.inter_subset_left]
+
+lemma K_open_I : ∃ U : Set ℝ, IsOpen U ∧
+    (↑) '' (K φ ψ x) = ((↑) '' (I φ)) ∩ U := by
+  have Kopen : IsOpen (K φ ψ x : Set NNReal) := by
+    apply IsOpen.connectedComponentIn
+    exact (φ_UV φ ψ).open_target
+  rw [isOpen_induced_iff] at Kopen
+  let ⟨U, Uopen, preimage_U⟩ := Kopen
+  use U
+  constructor
+  . exact Uopen
+  ext y
+  constructor
+  . intro yK
+    let ⟨y', y'K, y'y⟩ := yK
+    constructor
+    . exact ⟨y', K_subset_I φ ψ x y'K, y'y⟩
+    . rw [← preimage_U, Set.mem_preimage, NNReal.val_eq_coe, y'y] at y'K
+      exact y'K
+  . intro ⟨yI, yU⟩
+    rw [← preimage_U]
+    let ⟨y', _, y'y⟩ := yI
+    use y'
+    constructor
+    . rw [Set.mem_preimage, NNReal.val_eq_coe, y'y]
+      exact yU
+    . exact y'y
+
+lemma lemma01a
+  (ha : endpoint (K φ ψ x) a) :
+  (a ∉ (K φ ψ x)) := by
+    by_cases a_ep_I : endpoint (I φ) a
+    .
+      sorry
+    . rw [endpoint] at *
+      contrapose a_ep_I
+      simp only [not_not] at *
+      let ⟨U, openU, K_eq_IU⟩ := K_open_I φ ψ x
+      rw [K_eq_IU] at ha
+      have : ↑a ∈ frontier ((↑) '' I φ) ∪ frontier U := by
+        apply frontier_intersection_sub_union_frontiers
+        exact ha
+      rcases this with _ | a_frontierU
+      . assumption
+      have aK : ↑a ∈ NNReal.toReal '' K φ ψ x
+        := Set.mem_image_of_mem NNReal.toReal a_ep_I
+      rw [K_eq_IU] at aK
+      rw [← closure_diff_interior] at a_frontierU
+      let ⟨_, not_aU⟩ := a_frontierU
+      rw [IsOpen.interior_eq openU] at not_aU
+      have aU : ↑a ∈ U := Set.mem_of_mem_inter_right aK
+      contradiction
+
+end section -- x
+end section -- φ, ψ, pair
+end section -- M, ht
 
 class Topological1Manifold (X : Type u) [TopologicalSpace X] [T2Space X] : Prop where
   locally_euclidean : ∀ ⦃x : X⦄, ∃ (h : (PartialHomeomorph X ℝ)), x ∈ h.source
