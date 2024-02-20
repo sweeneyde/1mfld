@@ -1,7 +1,7 @@
 import Lake
 open Lake DSL
 
-package «1mfld» {
+package «one_mfld» {
   -- add any package configuration options here
 }
 
@@ -9,6 +9,6 @@ require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
 
 @[default_target]
-lean_lib «1mfld» {
+lean_lib «one_mfld» {
   -- add any library configuration options here
 }
