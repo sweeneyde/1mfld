@@ -1,4 +1,12 @@
 import Mathlib
+import one_mfld
+
+-- The real line is a 1-manifold with (empty) boundary
+instance : Topological1ManifoldWithBoundary ℝ where
+  atlas := sorry
+  chartAt _ := sorry
+  mem_chart_source x := sorry
+  chart_mem_atlas _ := sorry
 
 class Topological1Manifold (X : Type u) [TopologicalSpace X] [T2Space X] : Prop where
   locally_euclidean : ∀ ⦃x : X⦄, ∃ (h : (PartialHomeomorph X ℝ)), x ∈ h.source

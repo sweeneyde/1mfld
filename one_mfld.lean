@@ -8,13 +8,6 @@ import one_mfld.topology_lemmas
 
 class Topological1ManifoldWithBoundary (X : Type u) [TopologicalSpace X] [T2Space X] extends ChartedSpace NNReal X
 
--- The real line is a 1-manifold with (empty) boundary
-instance : Topological1ManifoldWithBoundary ℝ where
-  atlas := sorry
-  chartAt _ := sorry
-  mem_chart_source x := sorry
-  chart_mem_atlas _ := sorry
-
 section
 
 /-
@@ -33,7 +26,8 @@ variable
 
 structure NiceChart (φ : PartialHomeomorph M NNReal) where
   in_atlas : φ ∈ ht.atlas
-  bounded : Bornology.IsBounded φ.target
+  bounded_above : BddAbove φ.target
+  bounded_below : BddBelow φ.target
   connected : IsConnected φ.target
 
 structure PairOfCharts (φ ψ : PartialHomeomorph M NNReal) where
@@ -260,6 +254,43 @@ lemma αK_open : IsOpen ((α φ ψ) '' (K φ ψ x)) := by
   exact (K_open φ ψ x)
   rw [source_α', K]
   exact connectedComponentIn_subset (φ_UV φ ψ).toPartialEquiv.target ↑x
+
+lemma αK_connected : IsConnected ((α φ ψ) '' (K φ ψ x)) := by
+  refine IsConnected.image ?H ↑(α φ ψ) ?hf
+  rw [K, connectedComponentIn_eq_image]
+  -- have : IsConnected (connectedComponent ↑x) := isConnected_connectedComponent
+  apply IsConnected.image
+  . exact isConnected_connectedComponent
+  . exact Continuous.continuousOn continuous_subtype_val
+  . exact Subtype.mem x
+  . have t₁ : ContinuousOn (↑(α φ ψ)) (α φ ψ).source
+      := PartialHomeomorph.continuousOn (α φ ψ)
+    rw [source_α'] at t₁
+    have t₂ : K φ ψ x ⊆ (φ_UV φ ψ).target := by
+      rw [K]
+      exact connectedComponentIn_subset (φ_UV φ ψ).toPartialEquiv.target ↑x
+    exact ContinuousOn.mono t₁ t₂
+
+lemma J_boundedAbove : BddAbove (J ψ) := pair.nice_ψ.bounded_above
+lemma J_boundedBelow : BddBelow (J ψ) := pair.nice_ψ.bounded_below
+
+lemma αK_J : ((α φ ψ) '' (K φ ψ x)) ⊆ J ψ := by
+  rw [J, α]
+  sorry
+
+
+
+
+
+-- lemma αK_boundedAbove : BddAbove ((α φ ψ) '' (K φ ψ x)) := by
+--   have : ((α φ ψ) '' (K φ ψ x)) ⊆ J ψ := by calc
+--     ((α φ ψ) '' (K φ ψ x)) ⊆ ((α φ ψ) '' (φ_UV φ ψ).target) := by
+--       exact?
+--     _ ⊆ (α φ ψ).target := by sorry
+--     _ ⊆ J ψ := sorry
+--   -- apply BddAbove.mono
+--   sorry
+
 
 lemma lemma01a
   (ha : endpoint (K φ ψ x) a) :

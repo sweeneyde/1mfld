@@ -281,7 +281,7 @@ theorem classify_connected_reals
       (X = Set.univ)
     := by
   have ordconn := ordconn_of_connected conn
-  let nonempty := IsConnected.nonempty conn
+  have nonempty := IsConnected.nonempty conn
 
   have x_lt_excluded_supX {x supX : ℝ} (xX: x ∈ X)
     (h_supX: IsLUB X supX) (supX_X : supX ∉ X) : x < supX := by
@@ -432,3 +432,43 @@ theorem classify_connected_reals
       let ⟨A, AX, Asmall⟩ := below x
       have : Set.Icc A B ⊆ X := ordconn A AX B BX
       exact this ⟨LT.lt.le Asmall, LT.lt.le Bbig⟩
+
+theorem classify_connected_bounded_reals
+    {X : Set ℝ} (conn : IsConnected X)
+    (below : BddBelow X) (above : BddAbove X)
+    : (∃ a : ℝ, X = {a}) ∨
+      (∃ a b : ℝ, a < b ∧ (
+        X = Set.Ioo a b ∨
+        X = Set.Ioc a b ∨
+        X = Set.Ico a b ∨
+        X = Set.Icc a b
+      )) := by
+  rcases classify_connected_reals conn with (
+      ⟨a, b, ab, XIoo⟩ | ⟨a, b, ab, XIoc⟩ |
+      ⟨a, b, ab, XIco⟩ | ⟨a, b, ab, XIcc⟩ |
+      ⟨a, XIio⟩ | ⟨a, XIic⟩ | ⟨a, XIoi⟩ | ⟨a, XIci⟩ |
+      ⟨a, Xa⟩ | ⟨a, Xuniv⟩)
+  . right; use a, b, ab; left; exact XIoo
+  . right; use a, b, ab; right; left; exact XIoc
+  . right; use a, b, ab; right; right; left; exact XIco
+  . right; use a, b, ab; right; right; right; exact XIcc
+  . have : ¬ BddBelow (Set.Iio a) := not_bddBelow_Iio a
+    rw [← XIio] at this
+    contradiction
+  . have : ¬ BddBelow (Set.Iic a) := not_bddBelow_Iic a
+    rw [← XIic] at this
+    contradiction
+  . have : ¬ BddAbove (Set.Ioi a) := not_bddAbove_Ioi a
+    rw [← XIoi] at this
+    contradiction
+  . have : ¬ BddAbove (Set.Ici a) := not_bddAbove_Ici a
+    rw [← XIci] at this
+    contradiction
+  . left
+    use a
+  . have : ¬ BddAbove (Set.univ : Set ℝ) := not_bddAbove_univ
+    contradiction
+
+-- lemma bddAbove_subset {X Y : Set ℝ} (XY : X ⊆ Y) (hY : BddAbove Y)
+--     : BddAbove X := by
+--   exact BddAbove.mono XY hY
