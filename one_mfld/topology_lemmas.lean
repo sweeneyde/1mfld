@@ -236,58 +236,6 @@ lemma localCutPoint_of_homeo_iff
     rw [Homeomorph.symm_apply_apply] at this
     exact this
 
-lemma localCutPoint_local
-    {X : Type} [TopologicalSpace X] (x : X) (hx : LocalCutPoint x)
-    (U : Set X) (hU: IsOpen U) (xU : x ∈ U) : LocalCutPoint (⟨x, xU⟩ : U) := by
-
-  let i : { x // x ∈ U } → X := Subtype.val
-  intro V hV xV
-  have openV : IsOpen (↑V : Set X) := IsOpen.trans hV hU
-  specialize hx (i '' V) openV (Set.mem_image_val_of_mem xU xV)
-  have ⟨W, h₂, h₃, h₄, h₅, h₆⟩ := hx
-  have : ∃W' : Set { x // x ∈ U }, W = i '' W' := by
-    use i ⁻¹' W
-    rw [Subtype.image_preimage_coe]
-    refine (Set.inter_eq_self_of_subset_left ?h.a).symm
-    exact subset_trans h₂ Set.image_val_subset
-  have ⟨W', hW'⟩ := this
-  have hW'' : W' = i ⁻¹' W := by
-    rw [hW']
-    have : Function.Injective i := Subtype.val_injective
-    exact (Set.preimage_image_eq W' this).symm
-  have openW' : IsOpen W' := by
-    rw [hW'']
-    exact isOpen_induced h₃
-  rw [hW'] at h₂
-  have openEmbedding_i : OpenEmbedding i := by
-    apply openEmbedding_iff_continuous_injective_open.mpr
-    exact ⟨continuous_subtype_val, Subtype.val_injective, IsOpen.isOpenMap_subtype_val hU⟩
-  have connW' : IsConnected W' := by
-    apply IsConnected.preimage_of_openMap
-    rw [hW'']
-
-    sorry
-  have : W' ⊆ V := by
-    intro w wW
-    have : ↑w ∈ Subtype.val '' W' := Set.mem_image_of_mem Subtype.val wW
-    have : ↑w ∈ Subtype.val '' V := h₂ this
-    simp only [Set.mem_image, Subtype.exists, exists_and_right, exists_eq_right, Subtype.coe_eta,
-      Subtype.coe_prop, exists_const] at this
-    exact this
-  use W'
-  constructor
-  · exact this
-  constructor
-  · exact openW'
-  constructor
-  · rw [hW'']
-    simp only [Set.mem_preimage]
-    exact h₄
-  constructor
-  ·
-    sorry
-  sorry
-
 lemma connected_of_partialHomeomorph
     {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
     (f : PartialHomeomorph X Y) (A : Set X) (h₁A : A ⊆ f.source)
@@ -415,7 +363,7 @@ lemma partialhomeomorph_image_of_puncture
         _ = f.symm (f x) := by rw [fa_eq_b]
         _ = x := PartialHomeomorph.left_inv f (hU hx)
 
-lemma localCutPoint_of_partialHomeomorph
+theorem localCutPoint_of_partialHomeomorph
     {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
     (f : PartialHomeomorph X Y) {x : X}
     (h₁x : x ∈ f.source) (h₂x: LocalCutPoint x) : LocalCutPoint (f x) := by
@@ -465,8 +413,180 @@ lemma localCutPoint_of_partialHomeomorph
     rw [this]
     exact notConnUx_x
 
-lemma localCutPoint_of_nnreal_iff
-    (x : NNReal) : (LocalCutPoint x) ↔ x > 0 := by
+lemma ball_nnreal
+    (x : NNReal) (r : ℝ) : Metric.ball x r = {y : NNReal | x - r < ↑y ∧ ↑y < x + r} := by
+  ext y
+  simp only [Metric.mem_ball, Set.mem_setOf_eq]
+  have dist_eq_abs : dist ↑y ↑x = |NNReal.toReal y - NNReal.toReal x| := by exact rfl
+  rw [dist_eq_abs, abs_lt]
   constructor
-  · sorry
-  · sorry
+  · rintro ⟨_, _⟩
+    constructor <;> linarith
+  · rintro ⟨_, _⟩
+    constructor <;> linarith
+
+lemma ball_nnreal_preconnected
+    (x : NNReal) (r : ℝ) : IsPreconnected (Metric.ball x r) := by
+  rw [ball_nnreal x r]
+  apply Set.OrdConnected.isPreconnected
+  rw [Set.ordConnected_def]
+  rintro a ⟨h₁a, _⟩ b ⟨_, h₂b⟩ z ⟨h₁z, h₂z⟩
+  have h₁a' : NNReal.toReal a ≤ NNReal.toReal z := h₁z
+  have h₂a' : NNReal.toReal z ≤ NNReal.toReal b := h₂z
+  dsimp
+  constructor
+  · linarith
+  · linarith
+
+lemma ball_nnreal_connected
+    (x : NNReal) (r : ℝ) (hr : 0 < r) : IsConnected (Metric.ball x r) := by
+  rw [IsConnected]
+  constructor
+  · use x
+    rw [Metric.mem_ball, dist_self]
+    exact hr
+  · exact ball_nnreal_preconnected x r
+
+lemma localCutPoint_of_nnreal_iff
+    (x : NNReal) : (LocalCutPoint x) ↔ 0 < x := by
+  constructor
+  · contrapose
+    rw [not_lt, nonpos_iff_eq_zero]
+    intro x_eq_0
+    rw [x_eq_0]
+    show ¬LocalCutPoint 0
+    rw [LocalCutPoint]
+    push_neg
+    use Set.univ
+    constructor
+    · exact isOpen_univ
+    constructor
+    · trivial
+    intro U _ openU zero_in_U connU
+    have ordconnU : Set.OrdConnected U := IsPreconnected.ordConnected (IsConnected.isPreconnected connU)
+    have ordconn_pos : Set.OrdConnected ((Set.univ : Set NNReal) \ {0}) := by
+      rw [Set.ordConnected_def]
+      rintro a ⟨_, ha⟩ _ _
+      rw [Set.mem_singleton_iff] at ha
+      rintro z ⟨hz, _⟩
+      constructor
+      · trivial
+      rw [Set.mem_singleton_iff]
+      apply zero_lt_iff.1
+      calc
+        0 < a := zero_lt_iff.mpr ha
+        _ ≤ z := hz
+    have : U \ {0} = U ∩ (Set.univ \ {0}) := by
+      ext y
+      simp only [Set.mem_diff, Set.mem_singleton_iff, Set.mem_inter_iff, Set.mem_univ, true_and]
+    have ordconn : Set.OrdConnected (U \ {0}) := by
+      rw [this]
+      exact Set.OrdConnected.inter ordconnU ordconn_pos
+    rw [IsConnected]
+    constructor
+    · rw [Metric.isOpen_iff] at openU
+      specialize openU 0 zero_in_U
+      rcases openU with ⟨ε, εpos, U_contains_ball⟩
+      let v : NNReal := ⟨ε / 2, LT.lt.le (half_pos εpos)⟩
+      use v
+      constructor
+      · apply U_contains_ball
+        rw [Metric.mem_ball]
+        show |ε/2 - 0| < ε
+        calc
+          |ε/2 - 0| = |ε/2| := by rw [sub_zero]
+          _ = ε/2 := abs_of_nonneg (LT.lt.le (half_pos εpos))
+          _ < ε := half_lt_self εpos
+      · rw [Set.mem_singleton_iff]
+        intro h
+        have v_eq_0 : NNReal.toReal v = (0 : ℝ) := by exact (NNReal.coe_eq_zero v).mpr h
+        have : ↑v = ε / 2 := rfl
+        have := half_pos εpos
+        linarith
+    exact isPreconnected_iff_ordConnected.mpr ordconn
+  · rintro xpos V openV xV
+    rw [Metric.isOpen_iff] at openV
+    specialize openV x xV
+    rcases openV with ⟨ε, εpos, ball_in_V⟩
+    have rpos : 0 < min ε x := lt_min εpos xpos
+
+    use Metric.ball x (min ε x)
+    constructor
+    · intro y hy
+      apply ball_in_V
+      rw [Metric.mem_ball] at *
+      rw [lt_min_iff] at hy
+      exact hy.1
+    constructor
+    · exact Metric.isOpen_ball
+    constructor
+    · rw [Metric.mem_ball, dist_self]
+      exact rpos
+    constructor
+    · exact ball_nnreal_connected x (min ε ↑x) rpos
+    intro h
+    have : IsPreconnected (Metric.ball x (min ε ↑x) \ {x}) := IsConnected.isPreconnected h
+    have h' : Set.OrdConnected (Metric.ball x (min ε ↑x) \ {x}) := IsPreconnected.ordConnected this
+    rw [Set.ordConnected_def] at h'
+    let r' := (min ε ↑x) / 2
+    have : r' < min ε ↑x := half_lt_self rpos
+    rw [lt_min_iff] at this
+    rcases this with ⟨r'_lt_ε, r'_lt_x⟩
+    have rpos' : 0 < r' := half_pos rpos
+    let a : NNReal := ⟨↑x - r', (by linarith)⟩
+    let b : NNReal := ⟨↑x + r', (by linarith)⟩
+    have : NNReal.toReal a = ↑x - r' := rfl
+    have : NNReal.toReal b = ↑x + r' := rfl
+    have ha : a ∈ Metric.ball x (min ε ↑x) \ {x} := by
+      rw [Set.mem_diff, Metric.mem_ball, lt_min_iff, Set.mem_singleton_iff]
+      have : dist a x = |NNReal.toReal a - NNReal.toReal x| := rfl
+      rw [this, abs_lt, abs_lt]
+      constructor
+      · constructor
+        · constructor <;> linarith
+        · constructor <;> linarith
+      · intro ax
+        have : NNReal.toReal a = NNReal.toReal x := by rw [ax]
+        linarith
+    have hb : b ∈ Metric.ball x (min ε ↑x) \ {x} := by
+      rw [Set.mem_diff, Metric.mem_ball, lt_min_iff, Set.mem_singleton_iff]
+      have : dist b x = |NNReal.toReal b - NNReal.toReal x| := rfl
+      rw [this, abs_lt, abs_lt]
+      constructor
+      · constructor
+        · constructor <;> linarith
+        · constructor <;> linarith
+      · intro bx
+        have : NNReal.toReal b = NNReal.toReal x := by rw [bx]
+        linarith
+    specialize h' ha hb
+    have : x ∈ Set.Icc a b := by
+      rw [Set.mem_Icc]
+      constructor
+      · have : NNReal.toReal a ≤ NNReal.toReal x := by linarith
+        exact this
+      · have : NNReal.toReal x ≤ NNReal.toReal b := by linarith
+        exact this
+    have := h' this
+    rw [Set.mem_diff, Set.mem_singleton_iff] at this
+    apply this.right
+    rfl
+
+lemma zero_of_partialHomeomorph_NNReal_zero
+    (α : PartialHomeomorph NNReal NNReal)
+    (h: 0 ∈ α.source) :
+    α 0 = 0 := by
+  by_cases zero : α 0 = 0
+  · assumption
+  exfalso
+  have h₁ : α 0 > 0 := zero_lt_iff.mpr zero
+  have h₂ : LocalCutPoint (α 0) := (localCutPoint_of_nnreal_iff (α 0)).mpr h₁
+  have lcp : LocalCutPoint (α.symm (α 0)) := by
+    apply localCutPoint_of_partialHomeomorph
+    · simp only [PartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_source]
+      exact PartialHomeomorph.map_source α h
+    · exact h₂
+  have : α.symm (α 0) = 0 := PartialHomeomorph.left_inv α h
+  rw [this] at lcp
+  have : (0:NNReal) < (0:NNReal) := (localCutPoint_of_nnreal_iff 0).mp lcp
+  exact LT.lt.false this
