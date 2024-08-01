@@ -46,6 +46,40 @@ def endpoint
   (S : Set NNReal) (a : NNReal) :=
   (↑a : ℝ) ∈ frontier ((↑) '' S : Set ℝ)
 
+lemma endpoint_in_open_nnreal_iff
+    (A : Set NNReal) (Aopen : IsOpen A) (a : NNReal) (ha : a ∈ A) :
+    endpoint A a ↔ a = 0 := by
+  rcases Aopen with ⟨U, Uopen, AU⟩
+  have AU' : NNReal.toReal '' A = U ∩ Set.Ici (0:ℝ) := by
+    rw [← AU, NNReal.toReal, ← Subtype.image_preimage_val]
+    exact rfl
+  have a_U_Ici : ↑a ∈ U ∩ Set.Ici 0 := by
+    rw [← AU']
+    exact Set.mem_image_of_mem NNReal.toReal ha
+  constructor
+  · intro ep
+    rw [endpoint, AU'] at ep
+    have : ↑a ∈ frontier U ∪ frontier (Set.Ici 0) := by
+      apply frontier_intersection_sub_union_frontiers
+      exact ep
+    rcases this with (afU | a0)
+    · rw [frontier] at afU
+      rw [IsOpen.interior_eq Uopen] at afU
+      have : ↑a ∉ U := Set.not_mem_of_mem_diff afU
+      have : ↑a ∈ U := a_U_Ici.1
+      contradiction
+    · simp only [Set.nonempty_Iio, frontier_Ici', Set.mem_singleton_iff, NNReal.coe_eq_zero] at a0
+      exact a0
+  · intro a0
+    rw [a0] at ha a_U_Ici
+    rw [a0, endpoint, AU', frontier]
+    constructor
+    · exact subset_closure a_U_Ici
+    · intro zero_interior
+      rw [interior_inter, interior_Ici] at zero_interior
+      have : 0 ∈ Set.Ioi 0 := zero_interior.2
+      rw [Set.mem_Ioi] at this
+      exact LT.lt.false this
 
 section
 variable
@@ -274,14 +308,6 @@ lemma αK_connected : IsConnected ((α φ ψ) '' (K φ ψ x)) := by
 lemma J_boundedAbove : BddAbove (J ψ) := pair.nice_ψ.bounded_above
 lemma J_boundedBelow : BddBelow (J ψ) := pair.nice_ψ.bounded_below
 
-lemma αK_J : ((α φ ψ) '' (K φ ψ x)) ⊆ J ψ := by
-  rw [J, α]
-  sorry
-
-
-
-
-
 -- lemma αK_boundedAbove : BddAbove ((α φ ψ) '' (K φ ψ x)) := by
 --   have : ((α φ ψ) '' (K φ ψ x)) ⊆ J ψ := by calc
 --     ((α φ ψ) '' (K φ ψ x)) ⊆ ((α φ ψ) '' (φ_UV φ ψ).target) := by
@@ -291,72 +317,131 @@ lemma αK_J : ((α φ ψ) '' (K φ ψ x)) ⊆ J ψ := by
 --   -- apply BddAbove.mono
 --   sorry
 
+noncomputable example : ConditionallyCompleteLinearOrder ℝ :=
+  Real.instConditionallyCompleteLinearOrderReal
+
+lemma NNReal_instConditionallyCompleteLinearOrder : ConditionallyCompleteLinearOrder NNReal :=
+  ConditionallyCompleteLinearOrderBot.toConditionallyCompleteLinearOrder
+
+lemma sInf_eq {A : Set NNReal} {a : NNReal} (ha : IsGLB A a) : sInf A = a := by
+  exact IsGLB.csInf_eq ha (IsGLB.nonempty ha)
 
 lemma lemma01a
-  (ha : endpoint (K φ ψ x) a) :
-  (a ∉ (K φ ψ x)) := by
-    by_cases a_ep_I : endpoint (I φ) a
-    . intro aK
-      let αa := (α φ ψ).toFun a
-      let αK := (α φ ψ) '' (K φ ψ x)
-      have αa_ep_αK : endpoint αK αa := by
+    (ha : endpoint (K φ ψ x) a) :
+    (a ∉ (K φ ψ x)) := by
+  by_cases a_ep_I : endpoint (I φ) a
+  . intro aK
+    let αa := (α φ ψ) 0
+    let αK := (α φ ψ) '' (K φ ψ x)
+    have a_zero_iff := endpoint_in_open_nnreal_iff (K φ ψ x) (K_open φ ψ x) a aK
+    have a_zero : a = 0 := a_zero_iff.1 ha
+    rw [a_zero] at aK ha a_ep_I
+    have αa_αK : αa ∈ αK := Set.mem_image_of_mem (↑(α φ ψ)) aK
 
-        sorry
+    have K_subset_sourceα : K φ ψ x ⊆ (α φ ψ).source := by
+      rw [K]
+      exact connectedComponentIn_subset (φ_UV φ ψ).toPartialEquiv.target ↑x
+    have αa_eq_0 : αa = 0 := by
+      apply zero_of_partialHomeomorph_NNReal_zero
+      exact K_subset_sourceα aK
+    have αa_ep_αK : endpoint αK αa :=
+      (endpoint_in_open_nnreal_iff αK (αK_open φ ψ x) αa αa_αK).2 αa_eq_0
 
-      have : endpoint (Set.univ : Set NNReal) αa := by
-        rw [endpoint] at *
-        apply boundary_of_rel_open_subset (NNReal.toReal '' Set.univ) ((↑) '' αK)
-        have : IsOpen αK := αK_open φ ψ x
-        rw [isOpen_induced_iff] at this
-        rcases this with ⟨U, openU, U_NNR_eq_αK⟩
-        use U
-        constructor
-        . exact openU
-        . rw [← U_NNR_eq_αK]
-          ext y
-          simp only [Set.mem_image, Set.mem_preimage, NNReal.val_eq_coe, Set.image_univ,
-            Set.mem_inter_iff, Set.mem_range]
-          constructor
-          . intro ⟨y', y'U, y'y⟩
-            rw [← y'y]
-            exact ⟨(by use y'), y'U⟩
-          . intro ⟨⟨y', y'y⟩, yU⟩
-            use y'
-            rw [y'y]
-            exact ⟨yU, rfl⟩
-        constructor
-        . show ↑αa ∈ NNReal.toReal '' αK
-          simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_image, NNReal.coe_eq, exists_eq_right]
-          use a
-        . show ↑αa ∈ frontier (NNReal.toReal '' αK)
-          exact αa_ep_αK
+    let b := sSup (K φ ψ x)
+    have above_K : BddAbove (K φ ψ x) := BddAbove.mono (K_subset_I φ ψ x) pair.nice_φ.bounded_above
+    have hb : IsLUB (K φ ψ x) b := isLUB_csSup' above_K
+    have isGLB_0 : IsGLB (K φ ψ x) 0 := by
+      apply IsLeast.isGLB
+      constructor
+      · exact aK
+      intro y yK
+      exact zero_le y
+    have below_K : BddBelow (K φ ψ x) := by
+      use 0
+      intro y yK
+      exact zero_le y
+    have sInf_0 : sInf (K φ ψ x) = 0 := sInf_eq isGLB_0
+
+    have conn_K : IsConnected (K φ ψ x) := by
+      rw [K, isConnected_connectedComponentIn_iff]
+      exact Subtype.mem x
+    have ordconn_K := IsPreconnected.ordConnected (IsConnected.isPreconnected conn_K)
+
+    have K_contains_Ioo : Set.Ioo 0 b ⊆ K φ ψ x := by
+      have h₁ := IsConnected.Ioo_csInf_csSup_subset conn_K below_K above_K
+      rw [sInf_0] at h₁
+      exact h₁
+
+    have K_contains_lt_b (i : NNReal) (hi : i < b) : i ∈ (K φ ψ x) := by
+      by_cases h : i = 0
+      · rw [h]
+        exact aK
+      sorry
 
 
-      -- The two endpoints of K are a and b.
-      let b : NNReal := sorry
-      have hb : endpoint (K φ ψ x) b := sorry
-      have b_ne_a : b ≠ a := sorry
+    -- have : Set.Ico 0 b ⊆ K φ ψ x := by
+    --   intro x ⟨zero_le_x, x_lt_b⟩
+    --   by_cases h : x = 0
+    --   · rw [h];
+    --     exact aK
+    --   sorry
+
+
+
+    have b_I : b ∈ (I φ) := by
+      -- have ⟨u, uU, uV⟩ :=Set.not_subset.mp pair.u_not_in_v
+      by_cases h : b ∈ (I φ)
+      · assumption
+      exfalso
+      apply pair.u_not_in_v
+      rw [← U, ← V]
+
+      have : K φ ψ x = I φ := by
+        apply subset_antisymm
+        · exact K_subset_I φ ψ x
+        intro i iI
+        rcases lt_trichotomy i b with (i_lt_b | i_eq_b | b_lt_i)
+        · exact K_contains_lt_b i i_lt_b
+        · sorry
+        · sorry
+        -- · sorry
+
+      -- have : K φ ψ x =
 
       sorry
 
-    . rw [endpoint] at *
-      contrapose a_ep_I
-      simp only [not_not] at *
-      let ⟨U, openU, K_eq_IU⟩ := K_open_I φ ψ x
-      rw [K_eq_IU] at ha
-      have : ↑a ∈ frontier ((↑) '' I φ) ∪ frontier U := by
-        apply frontier_intersection_sub_union_frontiers
-        exact ha
-      rcases this with _ | a_frontierU
-      . assumption
-      have aK : ↑a ∈ NNReal.toReal '' K φ ψ x
-        := Set.mem_image_of_mem NNReal.toReal a_ep_I
-      rw [K_eq_IU] at aK
-      rw [← closure_diff_interior] at a_frontierU
-      let ⟨_, not_aU⟩ := a_frontierU
-      rw [IsOpen.interior_eq openU] at not_aU
-      have aU : ↑a ∈ U := Set.mem_of_mem_inter_right aK
-      contradiction
+
+      -- have _ : ¬ (U φ ⊆ V ψ) := pair.u_not_in_v
+
+
+
+
+    -- sorry
+    -- -- The two endpoints of K are a and b.
+    -- let b : NNReal := sorry
+    -- have hb : endpoint (K φ ψ x) b := sorry
+    -- have b_ne_a : b ≠ a := sorry
+
+    sorry
+
+  . rw [endpoint] at *
+    contrapose a_ep_I
+    simp only [not_not] at *
+    let ⟨U, openU, K_eq_IU⟩ := K_open_I φ ψ x
+    rw [K_eq_IU] at ha
+    have : ↑a ∈ frontier ((↑) '' I φ) ∪ frontier U := by
+      apply frontier_intersection_sub_union_frontiers
+      exact ha
+    rcases this with _ | a_frontierU
+    . assumption
+    have aK : ↑a ∈ NNReal.toReal '' K φ ψ x
+      := Set.mem_image_of_mem NNReal.toReal a_ep_I
+    rw [K_eq_IU] at aK
+    rw [← closure_diff_interior] at a_frontierU
+    let ⟨_, not_aU⟩ := a_frontierU
+    rw [IsOpen.interior_eq openU] at not_aU
+    have aU : ↑a ∈ U := Set.mem_of_mem_inter_right aK
+    contradiction
 
 end section -- x
 end section -- φ, ψ, pair

@@ -2,6 +2,8 @@ import Mathlib
 
 open Set
 
+namespace RealIntervals
+
 -- Use the order topology on ℝ throughout
 lemma ordconn_of_connected {X : Set ℝ} (conn : IsConnected X)
     (a : ℝ) (aX : a ∈ X) (b : ℝ) (bX : b ∈ X) : Icc a b ⊆ X := by
@@ -10,13 +12,18 @@ lemma ordconn_of_connected {X : Set ℝ} (conn : IsConnected X)
   exact Set.Icc_subset X aX bX
 
 -- Shouldn't this already be in mathlib?
-lemma Real.exists_isGLB (S : Set ℝ) (hne : S.Nonempty) (hbdd : BddBelow S) : ∃ x, IsGLB S x := by
+lemma Real.exists_isGLB (S : Set ℝ) (hne : S.Nonempty) (hbdd : BddBelow S)
+    : ∃ x, IsGLB S x := by
   use sInf S
-  rw [sInf_def, ← isLUB_neg, sSup_def, dif_pos]
+  rw [Real.sInf_def, ← isLUB_neg, Real.sSup_def, dif_pos]
   . apply Classical.choose_spec
   exact ⟨nonempty_neg.mpr hne, BddBelow.neg hbdd⟩
 
 -- classifying real intervals
+
+-- Note: Much of what's below already exists in mathlib:
+-- Use IsPreconnected.mem_intervals
+-- and Real.instConditionallyCompleteLinearOrderReal
 
 lemma connected_bddAbove_subset_contains_Ioo {X : Set ℝ} {supX : ℝ} {x : ℝ}
     (conn : IsConnected X) (h_supX : IsLUB X supX) (xX : x ∈ X)
@@ -259,19 +266,19 @@ lemma BoundedInterval_subset_Icc (I : BoundedInterval)
     : BoundedInterval_as_set I ⊆ Icc I.left_endpoint I.right_endpoint := by
   have ⟨a, b, lt, kind⟩ := I
   match kind with
-  | IooKind => dsimp; exact Ioo_subset_Icc_self
-  | IocKind => dsimp; exact Ioc_subset_Icc_self
-  | IcoKind => dsimp; exact Ico_subset_Icc_self
-  | IccKind => dsimp; exact Eq.subset rfl
+  | IooKind => exact Ioo_subset_Icc_self
+  | IocKind => exact Ioc_subset_Icc_self
+  | IcoKind => exact Ico_subset_Icc_self
+  | IccKind => exact Eq.subset rfl
 
 lemma BoundedInterval_contains_Ioo (I : BoundedInterval)
     : Ioo I.left_endpoint I.right_endpoint ⊆ BoundedInterval_as_set I := by
   have ⟨a, b, lt, kind⟩ := I
   match kind with
-  | IooKind => dsimp; exact Eq.subset rfl
-  | IocKind => dsimp; exact Ioo_subset_Ioc_self
-  | IcoKind => dsimp; exact Ioo_subset_Ico_self
-  | IccKind => dsimp; exact Ioo_subset_Icc_self
+  | IooKind => exact Eq.subset rfl
+  | IocKind => exact Ioo_subset_Ioc_self
+  | IcoKind => exact Ioo_subset_Ico_self
+  | IccKind => exact Ioo_subset_Icc_self
 
 lemma closure_BoundedInterval (I : BoundedInterval) : closure (BoundedInterval_as_set I) = Icc I.left_endpoint I.right_endpoint := by
   apply Subset.antisymm
@@ -295,7 +302,8 @@ lemma isBoundedAbove_BoundedInterval (I : BoundedInterval)
   BddAbove.mono (BoundedInterval_subset_Icc I) bddAbove_Icc
 
 @[simp]
-lemma interior_BoundedInterval (I : BoundedInterval) : interior (BoundedInterval_as_set I) = Ioo I.left_endpoint I.right_endpoint := by
+lemma interior_BoundedInterval (I : BoundedInterval)
+    : interior (BoundedInterval_as_set I) = Ioo I.left_endpoint I.right_endpoint := by
   rw [BoundedInterval_as_set]
   have ⟨a, b, lt, kind⟩ := I
   match kind with

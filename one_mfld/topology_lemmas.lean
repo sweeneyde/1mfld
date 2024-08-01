@@ -572,7 +572,7 @@ lemma localCutPoint_of_nnreal_iff
     apply this.right
     rfl
 
-lemma zero_of_partialHomeomorph_NNReal_zero
+theorem zero_of_partialHomeomorph_NNReal_zero
     (α : PartialHomeomorph NNReal NNReal)
     (h: 0 ∈ α.source) :
     α 0 = 0 := by
@@ -590,3 +590,6 @@ lemma zero_of_partialHomeomorph_NNReal_zero
   rw [this] at lcp
   have : (0:NNReal) < (0:NNReal) := (localCutPoint_of_nnreal_iff 0).mp lcp
   exact LT.lt.false this
+
+theorem NNReal_inst : CompleteSemilatticeInf NNReal := by
+  sorry
