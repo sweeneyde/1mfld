@@ -1,5 +1,5 @@
 import Mathlib
 
-import one_mfld.ClosureOverlap
+import OneMfld.ClosureOverlap
 
 #check nonempty_closure_inter_diff

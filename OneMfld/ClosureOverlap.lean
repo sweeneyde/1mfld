@@ -7,7 +7,6 @@ variable {α : Type u}
 variable {X : Type u} [TopologicalSpace X]
 variable {U V : Set X}
 
-@[export]
 lemma nonempty_closure_inter_diff
   (hVconn : IsConnected V) (hUopen : IsOpen U) (hVopen : IsOpen V)
   (hUV : (U ∩ V).Nonempty) (hVU : (V \ U).Nonempty) :
