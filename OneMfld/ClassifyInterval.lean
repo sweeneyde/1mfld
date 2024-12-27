@@ -910,7 +910,50 @@ lemma remove_zero_connected (U : Set NNReal) (h0 : 0 ∈ U) (hu : IsOpen U) (hc 
       tauto
     · exact a_and_b U ε εpos A B openA openB hp interval (by exact rfl) h1' empty hA hB hAB
 
-lemma zero_in_open (a b : NNReal) (h : IsOpen ((Ioo a b) ∪ {0})) : a ≤ 0 ∧ 0 < b := by sorry
+lemma zero_in_open (a b : NNReal) (h : IsOpen ((Ioo a b) ∪ {0})) : a ≤ 0 ∧ 0 < b := by
+  by_contra h'
+  simp only [nonpos_iff_eq_zero, not_and, not_lt] at h'
+  by_cases ha : a = 0
+  · specialize h' ha
+    rw [ha] at h
+    rw [h'] at h
+    simp only [lt_self_iff_false, not_false_eq_true, Ioo_eq_empty, union_singleton,
+      insert_emptyc_eq] at h
+    have : ¬ IsOpen ({ 0 } : Set NNReal) := not_isOpen_singleton 0
+    apply this
+    assumption
+  · let U := Set.Iio (a / 2)
+    have openU : IsOpen U := by exact isOpen_Iio
+    let U' := U ∩ (Ioo a b ∪ {0})
+    let openU' : IsOpen U' := by exact IsOpen.inter openU h
+    have U0 : U' = { 0 } := by
+      ext x
+      simp only [mem_singleton_iff]
+      apply Iff.intro
+      · intro hx
+        dsimp [U, U'] at hx
+        simp only [union_singleton, mem_inter_iff, mem_Iio, mem_insert_iff, mem_Ioo] at hx
+        have hx1 := hx.1
+        have hx2 := hx.2
+        rcases hx2 with (hx2|hx2)
+        · exact hx2
+        · have : a < x := hx2.1
+          exfalso
+          have this' : a < a / 2 := by exact gt_trans hx1 this
+          have this'' : a.toReal < a.toReal / 2 := by exact this'
+          have this3 : 0 ≤ a.toReal := by exact NNReal.zero_le_coe
+          linarith
+      · intro hx
+        dsimp [U, U']
+        simp only [union_singleton, mem_inter_iff, mem_Iio, mem_insert_iff, mem_Ioo]
+        apply And.intro
+        · rw [hx]
+          have : 0 < a := by exact pos_iff_ne_zero.mpr ha
+          exact half_pos this
+        · left ; assumption
+    have : ¬ IsOpen ({ 0 } : Set NNReal) := not_isOpen_singleton 0
+    apply this
+    rwa [U0] at openU'
 
 theorem classify_connected_nnreal_interval (U : Set NNReal) (hu : IsOpen U) (hc : IsConnected U) :
   (∃ x y, (Set.Ioo x y = U)) ∨
