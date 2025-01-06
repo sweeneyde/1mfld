@@ -1,8 +1,5 @@
 import Mathlib
-import OneMfld.ClassifyInterval
 import OneMfld.LocallyConnected
-
--- class OneManifold (M : Type*) [TopologicalSpace M] [T2Space M] extends ChartedSpace NNReal M
 
 variable
   {M : Type*}
@@ -211,7 +208,7 @@ class NicelyChartedSpace (H : Type*) [TopologicalSpace H] [Bornology H] (M : Typ
     is_bounded (φ : PartialHomeomorph M H) (h : φ ∈ atlas) : Bornology.IsBounded φ.target
     is_connected (φ : PartialHomeomorph M H) (h : φ ∈ atlas) : ConnectedSpace φ.target
 
-noncomputable def nicely_charted (ht : ChartedSpace NNReal M) : NicelyChartedSpace NNReal M where
+noncomputable instance nicely_charted (ht : ChartedSpace NNReal M) : NicelyChartedSpace NNReal M where
   chartAt := by
     intro x
     let c := ht.chartAt x
@@ -221,6 +218,7 @@ noncomputable def nicely_charted (ht : ChartedSpace NNReal M) : NicelyChartedSpa
     Set.image f (Set.univ : Set M)
   mem_chart_source (x : M) := by
     simp only [Set.mem_setOf_eq]
+    exact nice_chart_source
   chart_mem_atlas (x : M) := by
     simp only [Set.mem_setOf_eq, Set.image_univ, Set.mem_range, exists_apply_eq_apply]
   is_bounded (φ : PartialHomeomorph M NNReal) := by
@@ -237,107 +235,3 @@ noncomputable def nicely_charted (ht : ChartedSpace NNReal M) : NicelyChartedSpa
     rcases h with ⟨ y, hy ⟩
     rw [←hy]
     apply nice_chart_connected
-
-
---atlas : Set (PartialHomeomorph M H)
---The atlas of charts in the ChartedSpace.
-
---chartAt : M → PartialHomeomorph M H
---The preferred chart at each point in the charted space.
-
---mem_chart_source (x : M) : x ∈ (ChartedSpace.chartAt x).source
---chart_mem_atlas (x : M) : ChartedSpace.chartAt x ∈ ChartedSpace.atlas
-
-structure NiceChart (φ : PartialHomeomorph M NNReal) where
-  in_atlas : φ ∈ ht.atlas
-  bounded : Bornology.IsBounded φ.target
-  connected : ConnectedSpace φ.target
-
-theorem not_bounded_univ : ¬ Bornology.IsBounded (Set.univ : Set NNReal) := by
-  apply Metric.ediam_eq_top_iff_unbounded.mp
-  dsimp [EMetric.diam]
-  simp only [Set.mem_univ, iSup_pos]
-  dsimp [iSup]
-  have f : ∀ (x : NNReal), sSup (Set.range fun (y : NNReal) => edist x y) = ⊤ := by
-    intro x
-    apply sSup_eq_top.mpr
-    simp only [Set.mem_range, exists_exists_eq_and]
-    intro b hb
-    use b.toNNReal + 1 + x
-    dsimp [edist]
-    dsimp [PseudoMetricSpace.edist]
-    push_cast
-    ring_nf
-    refine ENNReal.lt_iff_exists_coe.mpr ?_
-    simp only [ENNReal.coe_lt_coe]
-    use b.toNNReal
-    apply And.intro
-    · refine Eq.symm (ENNReal.coe_toNNReal ?_)
-      exact LT.lt.ne_top hb
-    · have : abs (-1 - b.toReal) = 1 + b.toReal := by
-        have bpos' : b.toReal ≥ 0 := by exact ENNReal.toReal_nonneg
-        have bpos : 1 + b.toReal ≥ 0 := by linarith
-        apply (abs_eq bpos).mpr
-        right
-        ring
-      simp only [gt_iff_lt]
-      push_cast
-      refine NNReal.coe_lt_coe.mp ?_
-      push_cast
-      refine (ENNReal.lt_ofReal_iff_toReal_lt ?_).mp ?_
-      exact LT.lt.ne_top hb
-      rw [this]
-      refine (ENNReal.lt_ofReal_iff_toReal_lt ?_).mpr ?_
-      exact LT.lt.ne_top hb
-      exact lt_one_add b.toReal
-  have : ⊤ ∈ Set.range fun (x : NNReal) => sSup (Set.range fun (y : NNReal) => edist x y) := by
-    simp only [Set.mem_range]
-    use 0
-    exact f 0
-  exact csSup_eq_top_of_top_mem this
-
-theorem not_bounded_Ioi {x : NNReal} : ¬ Bornology.IsBounded (Set.Ioi x) := by
-  apply Metric.ediam_eq_top_iff_unbounded.mp
-  dsimp [EMetric.diam]
-  simp only [Set.mem_Ioi]
-  dsimp [iSup]
-  have f : ∀ (x_1 : NNReal), sSup (Set.range fun (x_2 : x < x_1) => sSup (Set.range fun y => sSup (Set.range fun (_ : x < y) => edist x_1 y))) = ⊤ := by
-    sorry
-  have : ⊤ ∈ (Set.range fun x_1 => sSup (Set.range fun (x_2 : x < x_1) => sSup (Set.range fun y => sSup (Set.range fun (_ : x < y) => edist x_1 y)))) := by
-    simp only [Set.mem_range]
-    use 0
-    exact f 0
-  exact csSup_eq_top_of_top_mem this
-
-
-
-
-theorem classify_nice_chart (φ : PartialHomeomorph M NNReal) (c : NiceChart φ) :
-  (∃ (a b : NNReal), φ.target = Set.Ioo a b) ∨ (∃ (b : NNReal), φ.target = Set.Iio b) := by
-  let U := φ.target
-  have h : (∃ x y, Set.Ioo x y = U) ∨ (∃ x, Set.Iio x = U) ∨ (∃ x, Set.Ioi x = U) ∨ U = Set.univ := by
-    apply classify_connected_nnreal_interval
-    exact φ.open_target
-    exact isConnected_iff_connectedSpace.mpr c.connected
-
-  rcases h with (h|h|h|h)
-  · left
-    rcases h with ⟨ a, b, h ⟩
-    dsimp [U] at h
-    rw [←h]
-    use a
-    use b
-  · right
-    dsimp [U] at h
-    rcases h with ⟨ b, h ⟩
-    use b
-    rw [h]
-  · exfalso
-    rcases h with ⟨ x, hx ⟩
-    have this' : ¬ Bornology.IsBounded (Set.Ioi x) := not_bounded_Ioi
-    rw [hx] at this'
-    exact this' c.bounded
-  · exfalso
-    apply not_bounded_univ
-    rw [←h]
-    exact c.bounded
