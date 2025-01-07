@@ -20,6 +20,7 @@ variable
   {M : Type*}
   [TopologicalSpace M]
   [ConnectedSpace M]
+  [T2Space M]
 
 def OChart.toIChart (a : OChart M) : IChart M :=
   { a with is_interval := Or.inl a.target_ioo }

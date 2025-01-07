@@ -10,6 +10,7 @@ variable
   {M : Type*}
   [TopologicalSpace M]
   [ConnectedSpace M]
+  [T2Space M]
 
 noncomputable def subsume_charts (ht : FinitelyIntervalChartedSpace M)
   {a : PartialHomeomorph M NNReal} (ha : a ∈ ht.atlas)
