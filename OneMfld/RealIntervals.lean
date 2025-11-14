@@ -12,7 +12,7 @@ lemma ordconn_of_connected {X : Set ℝ} (conn : IsConnected X)
   exact Set.Icc_subset X aX bX
 
 -- Shouldn't this already be in mathlib?
-lemma Real.exists_isGLB (S : Set ℝ) (hne : S.Nonempty) (hbdd : BddBelow S)
+lemma Real.exists_isGLB {S : Set ℝ} (hne : S.Nonempty) (hbdd : BddBelow S)
     : ∃ x, IsGLB S x := by
   use sInf S
   rw [Real.sInf_def, ← isLUB_neg, Real.sSup_def, dif_pos]
@@ -182,7 +182,7 @@ inductive BoundedIntervalKind | IooKind | IocKind | IcoKind | IccKind
 
 open BoundedIntervalKind
 
-structure BoundedInterval :=
+structure BoundedInterval where
   left_endpoint : ℝ
   right_endpoint : ℝ
   left_lt_right : left_endpoint < right_endpoint
@@ -230,8 +230,8 @@ theorem classify_connected_bounded_reals
     {X : Set ℝ} (conn : IsConnected X) (above : BddAbove X) (below : BddBelow X)
     : isSingleton X ∨ isBoundedInterval X := by
   have nonempty := IsConnected.nonempty conn
-  have ⟨supX, h_supX⟩ := Real.exists_isLUB X nonempty above
-  have ⟨infX, h_infX⟩ := Real.exists_isGLB X nonempty below
+  have ⟨supX, h_supX⟩ := Real.exists_isLUB nonempty above
+  have ⟨infX, h_infX⟩ := Real.exists_isGLB nonempty below
   by_cases inf_eq_sup : infX = supX
   . left; rw [isSingleton]; use infX
     rw [← inf_eq_sup] at h_supX
@@ -254,7 +254,7 @@ theorem classify_connected_bounded_reals_nonempty_interior
 
 lemma isConnected_BoundedInterval (I : BoundedInterval)
     : IsConnected (BoundedInterval_as_set I) := by
-  rw [BoundedInterval_as_set]
+  rw [BoundedInterval_as_set.eq_def]
   have ⟨a, b, lt, kind⟩ := I
   match kind with
   | IooKind => exact isConnected_Ioo lt
@@ -304,7 +304,7 @@ lemma isBoundedAbove_BoundedInterval (I : BoundedInterval)
 @[simp]
 lemma interior_BoundedInterval (I : BoundedInterval)
     : interior (BoundedInterval_as_set I) = Ioo I.left_endpoint I.right_endpoint := by
-  rw [BoundedInterval_as_set]
+  rw [BoundedInterval_as_set.eq_def]
   have ⟨a, b, lt, kind⟩ := I
   match kind with
   | IooKind => dsimp; exact interior_Ioo
@@ -394,7 +394,7 @@ lemma characterize_Ici {X : Set ℝ} (conn : IsConnected X)
 lemma classify_Ixi {X : Set ℝ} (conn : IsConnected X)
     (below : BddBelow X) (above : ¬ BddAbove X)
     : ∃ a : ℝ, (X = Ioi a ∨ X = Ici a) := by
-  have ⟨infX, h_infX⟩ := Real.exists_isGLB X (IsConnected.nonempty conn) below
+  have ⟨infX, h_infX⟩ := Real.exists_isGLB (IsConnected.nonempty conn) below
   use infX
   by_cases infX_X : infX ∈ X
   . right; exact characterize_Ici conn h_infX infX_X above
@@ -429,7 +429,7 @@ lemma characterize_Iic {X : Set ℝ} (conn : IsConnected X)
 lemma classify_Iix {X : Set ℝ} (conn : IsConnected X)
     (below : ¬ BddBelow X) (above : BddAbove X)
     : ∃ a : ℝ, (X = Iio a ∨ X = Iic a) := by
-  have ⟨supX, h_supX⟩ := Real.exists_isLUB X (IsConnected.nonempty conn) above
+  have ⟨supX, h_supX⟩ := Real.exists_isLUB (IsConnected.nonempty conn) above
   use supX
   by_cases supX_X : supX ∈ X
   . right; exact characterize_Iic conn h_supX supX_X below

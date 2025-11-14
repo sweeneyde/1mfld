@@ -26,7 +26,7 @@ noncomputable def choose_charts [CompactSpace M] [ht : ChartedSpace H M] : { ht'
 
   let f (x : M) : { x' : M | x' ∈ t ∧ x ∈ (ht.chartAt x').source } := by
     have : x ∈ ⋃ i ∈ t, U i := by exact t' trivial
-    simp only [Set.univ_subset_iff, Set.mem_iUnion, exists_prop] at this
+    simp only [Set.mem_iUnion, exists_prop] at this
     have hx := Classical.choose_spec this
     use Classical.choose this
     simp only [Set.mem_setOf_eq]

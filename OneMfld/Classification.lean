@@ -10,7 +10,6 @@ variable
   {M : Type*}
   [TopologicalSpace M]
   [ConnectedSpace M]
-  [T2Space M]
 
 noncomputable def subsume_charts (ht : FinitelyIntervalChartedSpace M)
   {a : PartialHomeomorph M NNReal} (ha : a ∈ ht.atlas)
@@ -298,7 +297,7 @@ lemma find_overlap [CompactSpace M] (ht : FinitelyIntervalChartedSpace M) {a : P
     rw [←he]
     exact a.continuousOn_toFun
 
-noncomputable def classification' [CompactSpace M] (ht : FinitelyIntervalChartedSpace M) : (Homeomorph M Circle) ⊕ (Homeomorph M UnitInterval) := by
+noncomputable def classification' [T2Space M] [CompactSpace M] (ht : FinitelyIntervalChartedSpace M) : (Homeomorph M Circle) ⊕ (Homeomorph M UnitInterval) := by
     -- instead, use the fact that M is nonempty and then use chartat
     have x := (ConnectedSpace.toNonempty : Nonempty M).some
     let φ := ht.chartAt x
@@ -405,7 +404,7 @@ decreasing_by · simp at ht''
                 refine (Set.natCard_pos ?_).mpr nonempty
                 exact ht.is_finite
 
-noncomputable def classification [CompactSpace M] (ht : ChartedSpace NNReal M) : (Homeomorph M Circle) ⊕ (Homeomorph M UnitInterval) :=
+noncomputable def classification [T2Space M] [CompactSpace M] (ht : ChartedSpace NNReal M) : (Homeomorph M Circle) ⊕ (Homeomorph M UnitInterval) :=
   let ht' := nicely_charted ht
   let ht'' := interval_charted ht'
   classification' (finitely_interval_charted ht'')

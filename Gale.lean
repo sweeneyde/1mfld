@@ -41,7 +41,6 @@ def IsUpper (S : Set NNReal) : Prop := ∃ x, S = Set.Ioo x 1
 def IsLower (S : Set NNReal) : Prop := ∃ x, S = Set.Ioo 0 x
 def IsOuter (S : Set NNReal) : Prop := (IsUpper S) ∨ (IsLower S)
 
-
 lemma overlap_oo_is_outer {U : OChart α} {V : OChart α} (h : Overlap U.source V.source)
   (x : α) (hx : x ∈ U.source ∩ V.source) :
   IsOuter ((U.toFun') '' (connectedComponentIn (U.source ∩ V.source) x)) := by

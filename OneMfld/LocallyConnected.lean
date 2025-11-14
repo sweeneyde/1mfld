@@ -13,14 +13,13 @@ instance : LocallyConnectedSpace NNReal := by
   rw [Set.Ioo] at x_ul
   dsimp at x_ul
   have l_lt_u : l < u := lt_trans x_ul.1 x_ul.2
-  have upos : 0 < u := gt_of_gt_of_ge (x_ul.2) (zero_le x)
+  have upos : 0 < u := lt_of_lt_of_le' (x_ul.2) (zero_le x)
 
   let V := {y : NNReal | l < ↑y ∧ ↑y < u}
   use V
   constructor
   . rw [nhds_subtype {x : ℝ | 0 ≤ x} x]
-    simp only [ge_iff_le, max_le_iff, NNReal.zero_le_coe, true_and, Set.mem_setOf_eq,
-    NNReal.val_eq_coe, Filter.mem_comap]
+    simp only [Set.mem_setOf_eq, NNReal.val_eq_coe, Filter.mem_comap]
     use Set.Ioo l u
     constructor
     . exact Ioo_mem_nhds x_ul.1 x_ul.2
@@ -61,7 +60,7 @@ instance : LocallyConnectedSpace NNReal := by
       toFun := fun t ↦ ⟨(unitInterval.symm t)*z' + t*y,
         add_nonneg (mul_nonneg unitInterval.nonneg' znonneg) (mul_nonneg unitInterval.nonneg' (zero_le y))⟩
       continuous_toFun := by
-        simp only [unitInterval.coe_symm_eq, NNReal.coe_mk]
+        simp only [unitInterval.coe_symm_eq]
         rw [Metric.continuous_iff]
         intro s ε εpos
         let δ := ε / dist y z'
@@ -105,12 +104,12 @@ instance : LocallyConnectedSpace NNReal := by
                         refine mul_inv_cancel_right₀ ?_ ε
                         exact dist_ne_zero.mpr fun a => h (id (Eq.symm a))
       source' := by
-        simp only [unitInterval.symm_zero, Set.Icc.coe_one, NNReal.coe_mk, one_mul,
+        simp only [unitInterval.symm_zero, Set.Icc.coe_one, one_mul,
           Set.Icc.coe_zero, zero_mul, add_zero]
         exact rfl
       target' := by
-        simp only [unitInterval.symm_one, Set.Icc.coe_zero, NNReal.coe_mk, zero_mul,
-          Set.Icc.coe_one, one_mul, zero_add]
+        simp only [unitInterval.symm_one, Set.Icc.coe_zero, zero_mul, Set.Icc.coe_one, one_mul,
+          zero_add]
         trivial
     }
     use γ
