@@ -124,8 +124,7 @@ lemma ico_not_open (x y  : Real) (hxy : x < y) : ¬ IsOpen (Ico x y) := by
     linarith
 
     simp only [and_imp]
-    intro h1
-    intro h2
+    intro h1 h2
     rw [ht']
     constructor
     linarith
@@ -1373,7 +1372,7 @@ theorem classify_connected_nnreal_interval (U : Set NNReal) (hu : IsOpen U) (hc 
               simp only [mem_Ioi] at this
               assumption
     · exfalso
-      have h0i : 0 ∉ Set.Ioi (0 : NNReal) := not_mem_Ioi_self
+      have h0i : 0 ∉ Set.Ioi (0 : NNReal) := notMem_Ioi_self
       have this' : 0 ∈ U0 := by
         have : 0 ∈ U' := by
           rw [c]

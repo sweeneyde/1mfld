@@ -12,8 +12,8 @@ variable
   [ConnectedSpace M]
 
 noncomputable def subsume_charts (ht : FinitelyIntervalChartedSpace M)
-  {a : PartialHomeomorph M NNReal} (ha : a ∈ ht.atlas)
-  {b : PartialHomeomorph M NNReal} (hb : b ∈ ht.atlas)
+  {a : OpenPartialHomeomorph M NNReal} (ha : a ∈ ht.atlas)
+  {b : OpenPartialHomeomorph M NNReal} (hb : b ∈ ht.atlas)
   (hs : a.source ⊆ b.source) (hab : a ≠ b):
   { ht' : FinitelyIntervalChartedSpace M | Nat.card ht'.atlas = Nat.card ht.atlas - 1 } := by
     let ht' : FinitelyIntervalChartedSpace M :=
@@ -54,8 +54,8 @@ noncomputable def subsume_charts (ht : FinitelyIntervalChartedSpace M)
 
 
 noncomputable def replace_charts (ht : FinitelyIntervalChartedSpace M)
-  {a : PartialHomeomorph M NNReal} (ha : a ∈ ht.atlas)
-  {b : PartialHomeomorph M NNReal} (hb : b ∈ ht.atlas)
+  {a : OpenPartialHomeomorph M NNReal} (ha : a ∈ ht.atlas)
+  {b : OpenPartialHomeomorph M NNReal} (hb : b ∈ ht.atlas)
   (ho : Overlap a.source b.source)
   (f : IChart M) (hf : f.source = a.source ∪ b.source ) :
   { ht' : FinitelyIntervalChartedSpace M | Nat.card ht'.atlas ≤ Nat.card ht.atlas - 1 } := by
@@ -70,11 +70,11 @@ noncomputable def replace_charts (ht : FinitelyIntervalChartedSpace M)
     { chartAt := by
         intro x
         by_cases h : a = ht.chartAt x
-        · exact f.toPartialHomeomorph
+        · exact f.toOpenPartialHomeomorph
         · by_cases h : b = ht.chartAt x
-          · exact f.toPartialHomeomorph
+          · exact f.toOpenPartialHomeomorph
           · exact ht.chartAt x
-    , atlas := (ht.atlas \ { a, b }) ∪ ({ f.toPartialHomeomorph } : Set _)
+    , atlas := (ht.atlas \ { a, b }) ∪ ({ f.toOpenPartialHomeomorph } : Set _)
     , chart_mem_atlas := by
         intro x
         split_ifs with h h'
@@ -103,7 +103,7 @@ noncomputable def replace_charts (ht : FinitelyIntervalChartedSpace M)
     , is_finite := by
         have : Finite ht.atlas := ht.is_finite
         simp only [Set.union_singleton]
-        exact Finite.Set.finite_insert f.toPartialHomeomorph (ChartedSpace.atlas \ {a, b})
+        exact Finite.Set.finite_insert f.toOpenPartialHomeomorph (ChartedSpace.atlas \ {a, b})
     , is_interval := by
         intro x
         intro hx
@@ -119,7 +119,7 @@ noncomputable def replace_charts (ht : FinitelyIntervalChartedSpace M)
 
     use ht'
 
-    have pair : ( { a, b } : Set (PartialHomeomorph M NNReal) ).ncard = 2 := Set.ncard_pair hab
+    have pair : ( { a, b } : Set (OpenPartialHomeomorph M NNReal) ).ncard = 2 := Set.ncard_pair hab
 
     have equal : ht.atlas \ {a, b} ∪ {a, b} = ht.atlas := Set.diff_union_of_subset (Set.pair_subset ha hb)
 
@@ -138,7 +138,7 @@ noncomputable def replace_charts (ht : FinitelyIntervalChartedSpace M)
       rw [union]
       exact rfl
 
-    have t : (ht.atlas \ {a, b} ∪ {f.toPartialHomeomorph}).ncard ≤ (ht.atlas \ { a, b } : Set _).ncard + ({f.toPartialHomeomorph} : Set _).ncard := by
+    have t : (ht.atlas \ {a, b} ∪ {f.toOpenPartialHomeomorph}).ncard ≤ (ht.atlas \ { a, b } : Set _).ncard + ({f.toOpenPartialHomeomorph} : Set _).ncard := by
       apply Set.ncard_union_le
 
     rw [this] at t
@@ -177,7 +177,7 @@ lemma more_than_one_chart [CompactSpace M] (ht : FinitelyIntervalChartedSpace M)
   by_contra htwo
   have hone : Nat.card ht.atlas = 1 := by linarith
 
-  have he : ∃ (a : PartialHomeomorph M NNReal), ht.atlas = { a } := Set.ncard_eq_one.mp hone
+  have he : ∃ (a : OpenPartialHomeomorph M NNReal), ht.atlas = { a } := Set.ncard_eq_one.mp hone
   rcases he with ⟨a,ha⟩
 
   have : φ ∈ ht.atlas := ChartedSpace.chart_mem_atlas z
@@ -216,10 +216,10 @@ lemma more_than_one_chart [CompactSpace M] (ht : FinitelyIntervalChartedSpace M)
     exact CompactSpace.isCompact_univ
   · exact a.continuousOn_toFun
 
-lemma find_overlap [CompactSpace M] (ht : FinitelyIntervalChartedSpace M) {a : PartialHomeomorph M NNReal}
+lemma find_overlap [CompactSpace M] (ht : FinitelyIntervalChartedSpace M) {a : OpenPartialHomeomorph M NNReal}
   (ha : a ∈ ht.atlas) {x : M} (hx : x ∈ a.source)
   (contains : ∀ c ∈ ChartedSpace.atlas \ {a}, ¬ a.source ⊆ c.source) :
-  ∃ (b : PartialHomeomorph M NNReal), (b ∈ ht.atlas \ {a}) ∧ (Overlap a.source b.source) := by
+  ∃ (b : OpenPartialHomeomorph M NNReal), (b ∈ ht.atlas \ {a}) ∧ (Overlap a.source b.source) := by
     by_contra h
     push_neg at h
 
@@ -305,7 +305,7 @@ noncomputable def classification' [T2Space M] [CompactSpace M] (ht : FinitelyInt
     have nonempty := nonempty_atlas ht
     --let φ := nonempty.some
     by_cases nonempty' : (ht.atlas \ {φ}).Nonempty
-    · by_cases contains : ∃ (ψ : PartialHomeomorph M NNReal), (ψ ∈ ht.atlas \ {φ}) ∧ (φ.source ⊆ ψ.source)
+    · by_cases contains : ∃ (ψ : OpenPartialHomeomorph M NNReal), (ψ ∈ ht.atlas \ {φ}) ∧ (φ.source ⊆ ψ.source)
       · let ψ := contains.choose
         let hψ := contains.choose_spec
         have hψ' : ψ ∈ ht.atlas := by
@@ -321,7 +321,7 @@ noncomputable def classification' [T2Space M] [CompactSpace M] (ht : FinitelyInt
           exact this' this
         have ⟨ ht', ht'' ⟩ := subsume_charts ht (ChartedSpace.chart_mem_atlas x) hψ' this hd
         exact classification' ht'
-      · have : ∃ (ψ : PartialHomeomorph M NNReal), (ψ ∈ ht.atlas \ {φ}) ∧ (Overlap φ.source ψ.source) := by
+      · have : ∃ (ψ : OpenPartialHomeomorph M NNReal), (ψ ∈ ht.atlas \ {φ}) ∧ (Overlap φ.source ψ.source) := by
           simp only [Set.mem_singleton_iff, not_exists, not_and, and_imp] at contains
           exact find_overlap ht (ChartedSpace.chart_mem_atlas x) (ChartedSpace.mem_chart_source x) contains
         let ψ := this.choose

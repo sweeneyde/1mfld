@@ -5,15 +5,15 @@ import OneMfld.IntervalCharts
 import OneMfld.NiceCharts
 
 structure OChart (M : Type*) [TopologicalSpace M]
-  extends PartialHomeomorph M NNReal where
+  extends OpenPartialHomeomorph M NNReal where
   target_ioo : (∃ x y, (Set.Ioo x y = target))
 
 structure HChart (M : Type*) [TopologicalSpace M]
-  extends PartialHomeomorph M NNReal where
+  extends OpenPartialHomeomorph M NNReal where
   target_iio : (∃ x, (Set.Iio x = target))
 
 structure IChart (M : Type*) [TopologicalSpace M]
-  extends PartialHomeomorph M NNReal where
+  extends OpenPartialHomeomorph M NNReal where
   is_interval : (∃ x y, (Set.Ioo x y = target)) ∨ (∃ x, (Set.Iio x = target))
 
 variable
@@ -57,9 +57,9 @@ lemma Overlap.nonempty {U : Set α} {V : Set α} (h : Overlap U V) : (Nonempty U
   · exact Set.Nonempty.to_subtype (Set.Nonempty.right nonempty)
 
 /-- Turn a homeomorphism of open subtypes `A ≃ₜ B` into a partial homeomorphism `X ⇀ Y`. -/
-noncomputable def Homeomorph.toPartialHomeomorphOnOpens {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+noncomputable def Homeomorph.toOpenPartialHomeomorphOnOpens {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
   {A : Set X} {B : Set Y} (h : A ≃ₜ B) (hA : IsOpen A) (hB : IsOpen B) :
-    PartialHomeomorph X Y :=
+    OpenPartialHomeomorph X Y :=
 { h.toEquiv.toPartialEquiv with
   open_source := hA,
   open_target := hB,
@@ -76,7 +76,7 @@ def handle_h_h''' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
   (hb_target : b.target = Set.Iio 2)
   (ha : a.toFun '' (a.source ∩ b.source) = Set.Ioo 1 2)
   (hb : b.toFun '' (a.source ∩ b.source) = Set.Ioo 1 2) :
-  { φ : PartialHomeomorph Interval3 M | φ.target = a.source ∪ b.source ∧ φ.source = Set.univ } := by
+  { φ : OpenPartialHomeomorph Interval3 M | φ.target = a.source ∪ b.source ∧ φ.source = Set.univ } := by
 
   let s := Interval3
   let t := Set.Ico (0 : Real) (2 : Real)
@@ -97,7 +97,7 @@ def handle_h_h''' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
     · use (a.toFun x)
       have : a.toFun x ∈ a.target := by exact PartialEquiv.map_source a.toFun ha
       rw [ha_target] at this
-      simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_Iio] at this
+      simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_Iio] at this
       have h0 : a.toFun x ≥ 0 := by exact zero_le (a.toFun x)
       have hi : ↑(a.toFun x) ∈ Interval3 := by
         dsimp [Interval3]
@@ -109,11 +109,11 @@ def handle_h_h''' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
         have h23 : (2 : Real) ≤ (3 : Real) := by linarith
         exact Preorder.le_trans (a.toFun x) 2 3 this h23
       use hi
-      simp only [PartialHomeomorph.toFun_eq_coe]
+      simp only [OpenPartialHomeomorph.toFun_eq_coe]
       dsimp [φfun]
       split_ifs with h2
-      refine (PartialHomeomorph.eq_symm_apply a.symm ?_ ha).mp rfl
-      simp only [PartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_source]
+      refine (OpenPartialHomeomorph.eq_symm_apply a.symm ?_ ha).mp rfl
+      simp only [OpenPartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_source]
       rw [ha_target]
       simp only [Set.mem_Iio]
       exact this
@@ -130,17 +130,17 @@ def handle_h_h''' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
           NNReal.zero_le_coe, and_true]
         have : b.toFun x ∈ b.target := by exact PartialEquiv.map_source b.toPartialEquiv xb
         rw [hb_target] at this
-        simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_Iio] at this
+        simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_Iio] at this
         have h23 : (2 : NNReal) ≤ 3 := by
           refine NNReal.coe_le_coe.mp ?_
           simp only [NNReal.coe_ofNat]
           linarith
-        have this' : (b.toPartialHomeomorph x) ≤ 2 := by exact le_of_lt this
-        have hf : (b.toPartialHomeomorph x) ≤ 3 := by
-          apply Preorder.le_trans (b.toPartialHomeomorph x) (2 : NNReal) (3 : NNReal) this' h23
+        have this' : (b.toOpenPartialHomeomorph x) ≤ 2 := by exact le_of_lt this
+        have hf : (b.toOpenPartialHomeomorph x) ≤ 3 := by
+          apply Preorder.le_trans (b.toOpenPartialHomeomorph x) (2 : NNReal) (3 : NNReal) this' h23
         exact hf
       use this
-      simp only [PartialHomeomorph.toFun_eq_coe]
+      simp only [OpenPartialHomeomorph.toFun_eq_coe]
       dsimp [φfun]
       simp only [sub_sub_cancel]
       split_ifs with h2
@@ -150,42 +150,42 @@ def handle_h_h''' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
         have h2' : (b.toFun x).toReal < 2 := by
           have : b.toFun x ∈ b.target := by exact PartialEquiv.map_source b.toPartialEquiv xb
           rw [hb_target] at this
-          simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_Iio] at this
+          simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_Iio] at this
           exact this
         have hbi : (b.toFun x) ∈ Set.Ioo 1 2 := by
-          simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_Ioo]
+          simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_Ioo]
           apply And.intro
           · exact h1
           · exact h2'
         rw [←hb] at hbi
-        simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_image, Set.mem_inter_iff] at hbi
+        simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_image, Set.mem_inter_iff] at hbi
         rcases hbi with ⟨ x1, ⟨ hx1, hxi ⟩  ⟩
         exfalso
         apply ha
         have hxi' : b.toFun x1 = b.toFun x := by exact hxi
         have hbb : b.symm (b.toFun x1) = b.symm (b.toFun x) := by
           rw [hxi']
-        simp only [PartialHomeomorph.toFun_eq_coe] at hbb
-        have cx1 : b.symm (b.toPartialHomeomorph x1) = x1 := by
-          refine (PartialHomeomorph.eq_symm_apply b.symm ?_ ?_).mp rfl
-          simp only [PartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_source,
-            PartialHomeomorph.toFun_eq_coe]
-          refine PartialHomeomorph.map_source b.toPartialHomeomorph ?_
+        simp only [OpenPartialHomeomorph.toFun_eq_coe] at hbb
+        have cx1 : b.symm (b.toOpenPartialHomeomorph x1) = x1 := by
+          refine (OpenPartialHomeomorph.eq_symm_apply b.symm ?_ ?_).mp rfl
+          simp only [OpenPartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_source,
+            OpenPartialHomeomorph.toFun_eq_coe]
+          refine OpenPartialHomeomorph.map_source b.toOpenPartialHomeomorph ?_
           exact Set.mem_of_mem_inter_right hx1
-          simp only [PartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_target]
+          simp only [OpenPartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_target]
           exact Set.mem_of_mem_inter_right hx1
-        have cx : b.symm (b.toPartialHomeomorph x) = x := by
-          exact PartialHomeomorph.left_inv b.toPartialHomeomorph xb
+        have cx : b.symm (b.toOpenPartialHomeomorph x) = x := by
+          exact OpenPartialHomeomorph.left_inv b.toOpenPartialHomeomorph xb
         rw [cx1] at hbb
         rw [cx] at hbb
         rw [←hbb]
         exact hx1.1
-      · refine (PartialHomeomorph.eq_symm_apply b.symm ?_ xb).mp rfl
-        simp only [PartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_source]
+      · refine (OpenPartialHomeomorph.eq_symm_apply b.symm ?_ xb).mp rfl
+        simp only [OpenPartialHomeomorph.symm_toPartialEquiv, PartialEquiv.symm_source]
         rw [hb_target]
         simp only [Set.mem_Iio]
-        have : ↑(b.toPartialHomeomorph x) < 2 := by
-          simp only [PartialHomeomorph.toFun_eq_coe] at this
+        have : ↑(b.toOpenPartialHomeomorph x) < 2 := by
+          simp only [OpenPartialHomeomorph.toFun_eq_coe] at this
           dsimp [Interval3] at this
           simp only [Set.mem_Icc, sub_nonneg, tsub_le_iff_right, le_add_iff_nonneg_right,
             NNReal.zero_le_coe, and_true] at this
@@ -211,13 +211,13 @@ def handle_h_h''' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
       split_ifs with h2
       left
 
-      refine PartialHomeomorph.map_target a.toPartialHomeomorph ?_
+      refine OpenPartialHomeomorph.map_target a.toOpenPartialHomeomorph ?_
       rw [ha_target]
       simp only [Set.mem_Iio]
       exact h2
 
       right
-      refine PartialHomeomorph.map_target b.toPartialHomeomorph ?_
+      refine OpenPartialHomeomorph.map_target b.toOpenPartialHomeomorph ?_
       rw [hb_target]
       simp only [Set.mem_Iio]
       dsimp [Interval3] at hx
@@ -288,7 +288,7 @@ def handle_h_h''' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
   (hb_target : b.target = Set.Iio 2)
   (ha : a.toFun '' (a.source ∩ b.source) = Set.Ioo 1 2)
   (hb : b.toFun '' (a.source ∩ b.source) = Set.Ioo 1 2) :
-  { φ : PartialHomeomorph M Interval3 | φ.source = a.source ∪ b.source ∧ φ.target = Set.univ } := by
+  { φ : OpenPartialHomeomorph M Interval3 | φ.source = a.source ∪ b.source ∧ φ.target = Set.univ } := by
 
   let s := a.source ∪ b.source
   let t := a.source
@@ -394,7 +394,7 @@ def handle_h_h'' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
   (hb_target : b.target = Set.Iio 1)
   (ha : ∃ (x : NNReal), a.toFun '' (a.source ∩ b.source) = Set.Ioo x 1)
   (hb : ∃ (y : NNReal), b.toFun '' (a.source ∩ b.source) = Set.Ioo y 1) :
-  { φ : PartialHomeomorph M UnitInterval | φ.source = a.source ∪ b.source ∧ φ.target = Set.univ } := by
+  { φ : OpenPartialHomeomorph M UnitInterval | φ.source = a.source ∪ b.source ∧ φ.target = Set.univ } := by
 
   let s := a.source ∪ b.source
   let t := a.source
@@ -408,15 +408,15 @@ def handle_h_h'' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
 
   have bsplit_target : bsplit ∈ b.target := by
     dsimp [bsplit]
-    have : PartialHomeomorph.IsImage b.symm b.target b.source :=
-      PartialHomeomorph.isImage_source_target b.symm
+    have : OpenPartialHomeomorph.IsImage b.symm b.target b.source :=
+      OpenPartialHomeomorph.isImage_source_target b.symm
 
   let split := b.symm.toFun bsplit
   have split_target : split ∈ b.source := by
-    have : PartialHomeomorph.IsImage b.symm b.target b.source :=
-      PartialHomeomorph.isImage_source_target b.symm
+    have : OpenPartialHomeomorph.IsImage b.symm b.target b.source :=
+      OpenPartialHomeomorph.isImage_source_target b.symm
     dsimp [split]
-    exact PartialHomeomorph.map_target b.toPartialHomeomorph bsplit_target
+    exact OpenPartialHomeomorph.map_target b.toOpenPartialHomeomorph bsplit_target
 
   have split_bsplit : b.toFun split = bsplit :=
     (PartialEquiv.eq_symm_apply b.toPartialEquiv split_target bsplit_target).mp rfl
@@ -425,16 +425,16 @@ def handle_h_h'' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
   have hb_end := b.target_iio.choose_spec
 
   -- tc maps via b to Set.Iic y
-  have b_inter : PartialHomeomorph.IsImage b.toPartialHomeomorph (a.source ∩ b.source) (Set.Ioo bsplit 1) := by
+  have b_inter : OpenPartialHomeomorph.IsImage b.toOpenPartialHomeomorph (a.source ∩ b.source) (Set.Ioo bsplit 1) := by
     have : b.toFun '' (a.source ∩ b.source) = Set.Ioo bsplit 1 := by
       dsimp [bsplit]
       exact hbsplit
-    dsimp [PartialHomeomorph.IsImage]
+    dsimp [OpenPartialHomeomorph.IsImage]
     intro x hx
     apply Iff.intro
     · intro hx'
       rw [←this] at hx'
-      simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_image, Set.mem_inter_iff] at hx'
+      simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_image, Set.mem_inter_iff] at hx'
       rcases hx' with ⟨ x', ⟨ ⟨ hxa, hxb ⟩, hxc  ⟩  ⟩
       have : Set.InjOn b.toFun b.source := by exact PartialEquiv.injOn b.toPartialEquiv
       specialize this hxb hx hxc
@@ -442,48 +442,48 @@ def handle_h_h'' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
       exact Set.mem_inter hxa hxb
     · intro hx'
       rw [←this]
-      simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_image, Set.mem_inter_iff]
+      simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_image, Set.mem_inter_iff]
       use x
       simp only [and_true]
       exact hx'
 
-  have b_tc : PartialHomeomorph.IsImage b.toPartialHomeomorph tc (Set.Iic bsplit) := by
-    have : PartialHomeomorph.IsImage b.toPartialHomeomorph b.source b.target :=
-      PartialHomeomorph.isImage_source_target b.toPartialHomeomorph
+  have b_tc : OpenPartialHomeomorph.IsImage b.toOpenPartialHomeomorph tc (Set.Iic bsplit) := by
+    have : OpenPartialHomeomorph.IsImage b.toOpenPartialHomeomorph b.source b.target :=
+      OpenPartialHomeomorph.isImage_source_target b.toOpenPartialHomeomorph
     dsimp [tc]
-    have : PartialHomeomorph.IsImage b.toPartialHomeomorph (b.source \ a.source) (b.target \ Set.Iic bsplit) :=
-      by refine PartialHomeomorph.IsImage.of_image_eq
+    have : OpenPartialHomeomorph.IsImage b.toOpenPartialHomeomorph (b.source \ a.source) (b.target \ Set.Iic bsplit) :=
+      by refine OpenPartialHomeomorph.IsImage.of_image_eq
          apply?
     apply?
     apply?
     sorry
-  --  have b_image : PartialHomeomorph.IsImage b.toPartialHomeomorph b.source b.target := by
-  --    exact PartialHomeomorph.isImage_source_target b.toPartialHomeomorph
+  --  have b_image : OpenPartialHomeomorph.IsImage b.toOpenPartialHomeomorph b.source b.target := by
+  --    exact OpenPartialHomeomorph.isImage_source_target b.toOpenPartialHomeomorph
   --  rw [←hb_end] at b_image
   --  dsimp [tc]
   --  sorry
 
-  have b_tc_symm : PartialHomeomorph.IsImage b.symm (Set.Iic bsplit) tc := by
+  have b_tc_symm : OpenPartialHomeomorph.IsImage b.symm (Set.Iic bsplit) tc := by
     sorry
-  --  have b_image : PartialHomeomorph.IsImage b.toPartialHomeomorph b.source b.target := by
-  --    exact PartialHomeomorph.isImage_source_target b.toPartialHomeomorph
+  --  have b_image : OpenPartialHomeomorph.IsImage b.toOpenPartialHomeomorph b.source b.target := by
+  --    exact OpenPartialHomeomorph.isImage_source_target b.toOpenPartialHomeomorph
   --  rw [←hb_end] at b_image
   --  dsimp [tc]
   --  sorry
 
-  have frontier_tc : PartialHomeomorph.IsImage b.toPartialHomeomorph (frontier tc) ({bsplit}) := by
+  have frontier_tc : OpenPartialHomeomorph.IsImage b.toOpenPartialHomeomorph (frontier tc) ({bsplit}) := by
     have : frontier (Set.Iic bsplit) = { bsplit } := by exact frontier_Iic
     rw [←this]
-    exact PartialHomeomorph.IsImage.frontier b_tc
+    exact OpenPartialHomeomorph.IsImage.frontier b_tc
 
-  have frontier_tc_symm : PartialHomeomorph.IsImage b.symm {bsplit} (frontier tc) := by
+  have frontier_tc_symm : OpenPartialHomeomorph.IsImage b.symm {bsplit} (frontier tc) := by
     have : frontier (Set.Iic bsplit) = { bsplit } := by exact frontier_Iic
     rw [←this]
-    exact PartialHomeomorph.IsImage.frontier b_tc_symm
+    exact OpenPartialHomeomorph.IsImage.frontier b_tc_symm
 
   have frontier_split : {split} = b.source ∩ (frontier tc) := by
     have : b.symm bsplit ∈ frontier tc := by
-      dsimp [PartialHomeomorph.IsImage] at frontier_tc_symm
+      dsimp [OpenPartialHomeomorph.IsImage] at frontier_tc_symm
       specialize frontier_tc_symm bsplit_target
       simp only [Set.mem_singleton_iff, iff_true] at frontier_tc_symm
       assumption
@@ -496,7 +496,7 @@ def handle_h_h'' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
 
     have rhs : b.source ∩ frontier tc ⊆ { split } := by
       intro x ⟨ hx1, hx2 ⟩
-      dsimp [PartialHomeomorph.IsImage] at frontier_tc
+      dsimp [OpenPartialHomeomorph.IsImage] at frontier_tc
       specialize frontier_tc hx1
       simp only [Set.mem_singleton_iff] at this
       simp only [Set.mem_singleton_iff] at frontier_tc
@@ -552,7 +552,7 @@ def handle_h_h'' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
           rw [this]
           refine Continuous.comp_continuousOn' ?_ ?_
           exact NNReal.continuous_coe
-          exact PartialHomeomorph.continuousOn a.toPartialHomeomorph
+          exact OpenPartialHomeomorph.continuousOn a.toOpenPartialHomeomorph
         · exact continuousOn_const
       · simp only [Set.mem_singleton_iff, forall_eq]
 
@@ -589,7 +589,7 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
   (ha_target : a.target = Set.Iio 1)
   (ha : ∃ (x : NNReal), a.toFun '' (a.source ∩ b.source) = Set.Ioo x 1)
   (hb : ∃ (y : NNReal), b.toFun '' (a.source ∩ b.source) = Set.Ioo y 1) :
-  { φ : PartialHomeomorph M UnitInterval | φ.source = a.source ∪ b.source ∧ φ.target = Set.univ } := by
+  { φ : OpenPartialHomeomorph M UnitInterval | φ.source = a.source ∪ b.source ∧ φ.target = Set.univ } := by
 
   let split : M := by sorry
   let hsplit : split ∈ a.source ∩ b.source := by sorry
@@ -605,7 +605,7 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
     dsimp [f]
     refine Continuous.comp_continuousOn' ?_ ?_
     · exact NNReal.continuous_coe
-    · exact PartialHomeomorph.continuousOn a.toPartialHomeomorph
+    · exact OpenPartialHomeomorph.continuousOn a.toOpenPartialHomeomorph
 
   let g (x : M) : Real := by
     let y  : Real := b.toFun x
@@ -627,7 +627,7 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
     apply Set.subset_union_compl_iff_inter_subset.mp
     refine
       Set.subset_union_of_subset_left ?_
-        (↑a.toPartialHomeomorph ⁻¹' Set.Iic (a.toPartialHomeomorph split))ᶜ
+        (↑a.toOpenPartialHomeomorph ⁻¹' Set.Iic (a.toOpenPartialHomeomorph split))ᶜ
     exact Set.subset_union_left
 
   let d (j : M) : Decidable (j ∈ t) := Classical.propDecidable (j ∈ t)
@@ -645,34 +645,34 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
 
   let φfun := t.piecewise f g
 
-  have image : PartialHomeomorph.IsImage a.toPartialHomeomorph a_side (Set.Iic (a.toFun split)) := by
-    simp only [PartialHomeomorph.toFun_eq_coe]
+  have image : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph a_side (Set.Iic (a.toFun split)) := by
+    simp only [OpenPartialHomeomorph.toFun_eq_coe]
     dsimp [a_side]
-    refine PartialHomeomorph.IsImage.of_preimage_eq ?_
+    refine OpenPartialHomeomorph.IsImage.of_preimage_eq ?_
     simp only [Set.right_eq_inter, Set.inter_subset_left]
 
-  have image' : PartialHomeomorph.IsImage a.toPartialHomeomorph.symm (Set.Iic (a.toFun split)) a_side := by
-    exact PartialHomeomorph.IsImage.symm image
+  have image' : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph.symm (Set.Iic (a.toFun split)) a_side := by
+    exact OpenPartialHomeomorph.IsImage.symm image
 
-  have image_frontier' : PartialHomeomorph.IsImage a.toPartialHomeomorph (frontier t) ({a.toFun split} : Set NNReal) := by
+  have image_frontier' : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph (frontier t) ({a.toFun split} : Set NNReal) := by
     dsimp [t]
-    have image_f : PartialHomeomorph.IsImage a.toPartialHomeomorph (frontier t) (frontier (Set.Iic (a.toFun split))) := by
-      exact PartialHomeomorph.IsImage.frontier image
+    have image_f : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph (frontier t) (frontier (Set.Iic (a.toFun split))) := by
+      exact OpenPartialHomeomorph.IsImage.frontier image
     have : frontier (Set.Iic (a.toFun split)) =  ({a.toFun split} : Set NNReal) := frontier_Iic
     rw [this] at image_f
     exact image_f
 
-  have image_frontier : PartialHomeomorph.IsImage a.toPartialHomeomorph.symm ({a.toFun split} : Set NNReal) (frontier t) := by
+  have image_frontier : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph.symm ({a.toFun split} : Set NNReal) (frontier t) := by
     dsimp [t]
-    have image_f : PartialHomeomorph.IsImage a.toPartialHomeomorph.symm (frontier (Set.Iic (a.toFun split))) (frontier t) := by
-      exact PartialHomeomorph.IsImage.frontier image'
+    have image_f : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph.symm (frontier (Set.Iic (a.toFun split))) (frontier t) := by
+      exact OpenPartialHomeomorph.IsImage.frontier image'
     have : frontier (Set.Iic (a.toFun split)) =  ({a.toFun split} : Set NNReal) := frontier_Iic
     rw [this] at image_f
     exact image_f
 
-  have closure_image : PartialHomeomorph.IsImage a.toPartialHomeomorph (closure t) (Set.Iic (a.toFun split)) := by
-    have image : PartialHomeomorph.IsImage a.toPartialHomeomorph (closure t) (closure (Set.Iic (a.toFun split))) := by
-      exact PartialHomeomorph.IsImage.closure image
+  have closure_image : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph (closure t) (Set.Iic (a.toFun split)) := by
+    have image : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph (closure t) (closure (Set.Iic (a.toFun split))) := by
+      exact OpenPartialHomeomorph.IsImage.closure image
     have : closure (Set.Iic (a.toFun split)) = (Set.Iic (a.toFun split)) := closure_Iic (a.toPartialEquiv split)
     rw [this] at image
     exact image
@@ -681,9 +681,9 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
     have : IsCompact (Set.Icc 0 (a.toFun split)) := by exact isCompact_Icc
     have e : (Set.Icc 0 (a.toFun split)) = (Set.Iic (a.toFun split)) := by
       ext x
-      simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_Icc, zero_le, true_and, Set.mem_Iic]
+      simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_Icc, zero_le, true_and, Set.mem_Iic]
     rw [e] at this
-    have i : PartialHomeomorph.IsImage a.toPartialHomeomorph.symm (Set.Iic (a.toFun split)) t := by exact
+    have i : OpenPartialHomeomorph.IsImage a.toOpenPartialHomeomorph.symm (Set.Iic (a.toFun split)) t := by exact
       image'
     have homeo : Homeomorph t (Set.Iic (a.toFun split)) := sorry
     apply (Homeomorph.isCompact_image homeo).mp
@@ -696,7 +696,7 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
     ext x
     apply Iff.intro
     · intro hx
-      dsimp [PartialHomeomorph.IsImage] at image_frontier'
+      dsimp [OpenPartialHomeomorph.IsImage] at image_frontier'
       simp only [Set.mem_inter_iff] at hx
       specialize image_frontier' hx.1
       have := image_frontier'.mpr hx.2
@@ -712,8 +712,8 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
       specialize image_frontier this
       have : x = split := hx
       rw [this]
-      simp only [PartialHomeomorph.toFun_eq_coe, Set.mem_singleton_iff, iff_true] at image_frontier
-      have : a.symm (a.toPartialHomeomorph split) = split := PartialHomeomorph.left_inv a.toPartialHomeomorph this
+      simp only [OpenPartialHomeomorph.toFun_eq_coe, Set.mem_singleton_iff, iff_true] at image_frontier
+      have : a.symm (a.toOpenPartialHomeomorph split) = split := OpenPartialHomeomorph.left_inv a.toOpenPartialHomeomorph this
       rw [this] at image_frontier
 
       simp only [Set.mem_inter_iff]
@@ -753,7 +753,7 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
       exact ContinuousOn.mono f_cts this
     ·
 
-  let φ : PartialHomeomorph M Real :=
+  let φ : OpenPartialHomeomorph M Real :=
   { toFun := φfun
   , invFun := by sorry
   , source : Set M := a.source ∪ b.source
@@ -768,7 +768,7 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
         rw [this]
         have : a.toFun x ∈ a.target := by
           dsimp [f]
-          apply PartialHomeomorph.map_source a.toPartialHomeomorph
+          apply OpenPartialHomeomorph.map_source a.toOpenPartialHomeomorph
           exact Set.mem_of_mem_inter_left xt
         rcases a.target_iio with ⟨ z, hz ⟩
         rw [ha_target] at this
@@ -779,18 +779,18 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
       · have : t.piecewise f g x = g x := Set.piecewise_eq_of_not_mem t f g xt
         rw [this]
 
-        have bx_min' : (b.toPartialHomeomorph x : Real) / (b_split : Real) ≥ 0 := by sorry
-        have bx_max' : (b.toPartialHomeomorph x : Real) / (b_split : Real) ≤ 1 := by sorry
+        have bx_min' : (b.toOpenPartialHomeomorph x : Real) / (b_split : Real) ≥ 0 := by sorry
+        have bx_max' : (b.toOpenPartialHomeomorph x : Real) / (b_split : Real) ≤ 1 := by sorry
         have a_min'' : (1 : Real) - (a_split : Real) ≤ 1 := by sorry
         have a_min''' : (1 : Real) - (a_split : Real) ≥ 0 := by sorry
 
         apply And.intro
         · dsimp [g]
-          have : (b.toPartialHomeomorph x : Real) / (b_split : Real) * (1 - (a_split : Real)) ≤ 1 := by
+          have : (b.toOpenPartialHomeomorph x : Real) / (b_split : Real) * (1 - (a_split : Real)) ≤ 1 := by
             exact mul_le_one₀ bx_max' a_min''' a_min''
           linarith
         · dsimp [g]
-          have : (b.toPartialHomeomorph x : Real) / (b_split : Real) * ((a_split : Real) - 1) ≤ 1 * ((a_split : Real) - 1) := by
+          have : (b.toOpenPartialHomeomorph x : Real) / (b_split : Real) * ((a_split : Real) - 1) ≤ 1 * ((a_split : Real) - 1) := by
             apply mul_le_mul_of_nonneg
             linarith
             linarith
@@ -821,7 +821,7 @@ def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source)
   sorry
 
 def handle_h_h' (a : HChart M) (b : HChart M) (h : Overlap a.source b.source) :
-  { φ : PartialHomeomorph M UnitInterval | φ.source = a.source ∪ b.source ∧ φ.target = Set.univ } := by
+  { φ : OpenPartialHomeomorph M UnitInterval | φ.source = a.source ∪ b.source ∧ φ.target = Set.univ } := by
   sorry
 
 def handle_h_h (a : HChart M) (b : HChart M) (h : Overlap a.source b.source) :
