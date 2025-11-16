@@ -35,7 +35,7 @@ lemma nonempty_closure_inter_diff
         rw [h] at this
         exact this
       · intro hcu
-        exact not_mem_of_not_mem_closure hcu
+        exact notMem_of_notMem_closure hcu
     dsimp [B] -- this is needed?
     rw [this]
     exact IsOpen.sdiff hVopen isClosed_closure
@@ -64,10 +64,9 @@ lemma nonempty_closure_inter_diff
 
   have disjointAB : A ∩ B = ∅ := by
     ext x
-    simp only [mem_inter_iff, mem_diff, mem_empty_iff_false, iff_false, not_and, not_not, and_imp,
-      imp_forall_iff_forall]
+    simp only [mem_inter_iff, mem_empty_iff_false, iff_false, not_and]
     intro hx
-    apply not_mem_diff_of_mem
+    apply notMem_diff_of_mem
     exact mem_of_mem_inter_left hx
 
   have nonemptyVAB : (V ∩ (A ∩ B)).Nonempty := hVconn' A B openA openB coverAB nonemptyVA nonemptyVB
