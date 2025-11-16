@@ -43,14 +43,13 @@ noncomputable def subsume_charts (ht : FinitelyIntervalChartedSpace M)
         · exact ChartedSpace.mem_chart_source x
     , is_finite := Set.Finite.subset ht.is_finite Set.diff_subset
     , is_interval := by
-        intro φ
-        intro hφ
+        intro φ hφ
         apply ht.is_interval
         exact Set.mem_of_mem_diff hφ
     }
 
     use ht'
-    exact Set.ncard_diff_singleton_of_mem ha (ht.is_finite)
+    exact Set.ncard_diff_singleton_of_mem ha
 
 
 noncomputable def replace_charts (ht : FinitelyIntervalChartedSpace M)
@@ -105,8 +104,7 @@ noncomputable def replace_charts (ht : FinitelyIntervalChartedSpace M)
         simp only [Set.union_singleton]
         exact Finite.Set.finite_insert f.toOpenPartialHomeomorph (ChartedSpace.atlas \ {a, b})
     , is_interval := by
-        intro x
-        intro hx
+        intro x hx
         simp only [Set.union_singleton, Set.mem_insert_iff, Set.mem_diff, Set.mem_singleton_iff,
           not_or] at hx
 
@@ -126,7 +124,8 @@ noncomputable def replace_charts (ht : FinitelyIntervalChartedSpace M)
     have union : ((ht.atlas \ { a, b } : Set _) ∪ {a, b} : Set _).ncard = (ht.atlas \ { a, b } : Set _).ncard + ( { a, b } : Set _ ).ncard := by
       apply Set.ncard_union_eq
       exact Set.disjoint_sdiff_left
-      exact Set.Finite.diff ht.is_finite {a, b}
+      apply Set.Finite.diff
+      exact ht.is_finite
       exact Set.toFinite {a, b}
 
     rw [pair] at union
@@ -317,12 +316,12 @@ noncomputable def classification' [T2Space M] [CompactSpace M] (ht : FinitelyInt
           have : ψ ∈ ChartedSpace.atlas \ {φ} := hψ.1
           by_contra hd
           rw [←hd] at this
-          have this' : φ ∉ ChartedSpace.atlas \ {φ} := by exact Set.not_mem_diff_of_mem rfl
+          have this' : φ ∉ ChartedSpace.atlas \ {φ} := by exact Set.notMem_diff_of_mem rfl
           exact this' this
         have ⟨ ht', ht'' ⟩ := subsume_charts ht (ChartedSpace.chart_mem_atlas x) hψ' this hd
         exact classification' ht'
       · have : ∃ (ψ : OpenPartialHomeomorph M NNReal), (ψ ∈ ht.atlas \ {φ}) ∧ (Overlap φ.source ψ.source) := by
-          simp only [Set.mem_singleton_iff, not_exists, not_and, and_imp] at contains
+          simp only [not_exists, not_and] at contains
           exact find_overlap ht (ChartedSpace.chart_mem_atlas x) (ChartedSpace.mem_chart_source x) contains
         let ψ := this.choose
         let ⟨ hψ, overlap ⟩ := this.choose_spec
@@ -386,7 +385,7 @@ noncomputable def classification' [T2Space M] [CompactSpace M] (ht : FinitelyInt
       have t' := more_than_one_chart ht
       linarith
 
-termination_by Nat.card ht.atlas
+termination_by Set.ncard ht.atlas
 decreasing_by · simp at ht''
                 rw [ht'']
                 simp only [tsub_lt_self_iff, zero_lt_one, and_true, gt_iff_lt]
