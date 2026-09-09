@@ -54,7 +54,7 @@ lemma not_isCompact_Ici_zero_real : ¬ IsCompact (Ici (0 : ℝ)) := by
 theorem not_compactSpace_NNReal : ¬ CompactSpace NNReal := by
   intro h
   -- Use the assumed instance `CompactSpace NNReal`.
-  haveI : CompactSpace NNReal := h
+  have : CompactSpace NNReal := h
 
   -- The whole space is compact.
   have hK : IsCompact (univ : Set NNReal) := isCompact_univ
@@ -64,8 +64,7 @@ theorem not_compactSpace_NNReal : ¬ CompactSpace NNReal := by
       IsCompact ((fun x : NNReal => (x : ℝ)) '' (univ : Set NNReal)) :=
     hK.image (by
       -- continuity of the inclusion
-      simpa using
-        (continuous_subtype_val : Continuous fun x : NNReal => (x : ℝ)))
+      simpa using NNReal.continuous_coe)
 
   -- Identify the image with `[0, ∞)` as a subset of ℝ.
   have hImage_eq : ((fun x : NNReal => (x : ℝ)) '' (univ : Set NNReal))
@@ -73,10 +72,10 @@ theorem not_compactSpace_NNReal : ¬ CompactSpace NNReal := by
     ext x; constructor
     · -- forward direction: any `x = ↑y` with y ≥ 0 lies in `[0,∞)`
       rintro ⟨y, -, rfl⟩
-      exact y.property
+      exact y.coe_nonneg
     · -- backward: any real x ≥ 0 comes from some nnreal y with y.val = x
       intro hx
-      refine ⟨⟨x, hx⟩, trivial, rfl⟩
+      exact ⟨NNReal.mk x hx, trivial, rfl⟩
 
   have hIci0 : IsCompact (Ici (0 : ℝ)) := by
     simpa [hImage_eq] using hImage

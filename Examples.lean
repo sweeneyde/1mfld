@@ -26,15 +26,15 @@ section
 variable (Y : Type*)
 instance example03 : TopologicalSpace Y where
   IsOpen (h : Set Y) : Prop := True
-  isOpen_univ := by triv
+  isOpen_univ := by trivial
   isOpen_inter := by
     intros s t
     intro hs ht
-    triv
+    trivial
   isOpen_sUnion := by
     intros ss
     intro hs 
-    triv
+    trivial
 
 end section
 

@@ -174,7 +174,7 @@ noncomputable def nice_chart (φ : OpenPartialHomeomorph M NNReal) (x : M) (h : 
   rcases (improved_chart φ x h) with ⟨ φ', h1, h2 ⟩
   rcases (improved_chart' φ' x h1 h2) with ⟨ φ'', h1, h2, h3 ⟩
   use φ''
-  simp only [Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq]
   exact ⟨ h1, ⟨ h2, h3 ⟩ ⟩
 
 lemma nice_chart_source {φ : OpenPartialHomeomorph M NNReal} {x : M} {h : x ∈ φ.source} :
@@ -208,7 +208,7 @@ class NicelyChartedSpace (H : Type*) [TopologicalSpace H] [Bornology H] (M : Typ
     is_bounded (φ : OpenPartialHomeomorph M H) (h : φ ∈ atlas) : Bornology.IsBounded φ.target
     is_connected (φ : OpenPartialHomeomorph M H) (h : φ ∈ atlas) : ConnectedSpace φ.target
 
-noncomputable instance nicely_charted (ht : ChartedSpace NNReal M) : NicelyChartedSpace NNReal M where
+@[instance_reducible] noncomputable def nicely_charted (ht : ChartedSpace NNReal M) : NicelyChartedSpace NNReal M where
   chartAt := by
     intro x
     let c := ht.chartAt x
@@ -217,10 +217,10 @@ noncomputable instance nicely_charted (ht : ChartedSpace NNReal M) : NicelyChart
   atlas := let f x := (nice_chart (ht.chartAt x) x (ht.mem_chart_source x)).1
     Set.image f (Set.univ : Set M)
   mem_chart_source (x : M) := by
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     exact nice_chart_source
   chart_mem_atlas (x : M) := by
-    simp only [Set.mem_setOf_eq, Set.image_univ, Set.mem_range, exists_apply_eq_apply]
+    simp only [Set.mem_ofPred_eq, Set.image_univ, Set.mem_range, exists_apply_eq_apply]
   is_bounded (φ : OpenPartialHomeomorph M NNReal) := by
     intro h
     dsimp [atlas] at h

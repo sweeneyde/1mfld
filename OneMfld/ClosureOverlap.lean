@@ -14,7 +14,7 @@ lemma nonempty_closure_inter_diff
 
   -- prove by contradiction that `closure U ∩ (V \ U)` can't be empty.
   by_contra h
-  push_neg at h
+  push Not at h
 
   let A := U ∩ V
   let B := V \ U
@@ -25,11 +25,11 @@ lemma nonempty_closure_inter_diff
   have openB : IsOpen (B : Set X) := by
     have : (V \ U) = (V \ (closure U)) := by
       ext x
-      simp only [mem_diff, and_congr_right_iff]
+      simp only [mem_sdiff, and_congr_right_iff]
       intro hv
       constructor
       · intro hu
-        have : x ∈ V \ U := mem_diff_of_mem hv hu
+        have : x ∈ V \ U := mem_sdiff_of_mem hv hu
         by_contra hcu
         have : x ∈ closure U ∩ (V \ U) := by exact mem_inter hcu this
         rw [h] at this
@@ -47,7 +47,7 @@ lemma nonempty_closure_inter_diff
     · left
       exact mem_inter hxU hx
     · right
-      exact mem_diff_of_mem hx hxU
+      exact mem_sdiff_of_mem hx hxU
 
   have nonemptyVA : (V ∩ A).Nonempty := by
     have : (V ∩ (U ∩ V)) = U ∩ V := by
@@ -58,7 +58,7 @@ lemma nonempty_closure_inter_diff
   have nonemptyVB : (V ∩ B).Nonempty := by
     have : (V ∩ (V \ U)) = (V \ U) := by
       simp only [inter_eq_right]
-      exact diff_subset
+      exact sdiff_subset
     rw [this]
     exact hVU
 
@@ -66,7 +66,7 @@ lemma nonempty_closure_inter_diff
     ext x
     simp only [mem_inter_iff, mem_empty_iff_false, iff_false, not_and]
     intro hx
-    apply notMem_diff_of_mem
+    apply notMem_sdiff_of_mem
     exact mem_of_mem_inter_left hx
 
   have nonemptyVAB : (V ∩ (A ∩ B)).Nonempty := hVconn' A B openA openB coverAB nonemptyVA nonemptyVB

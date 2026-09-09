@@ -32,7 +32,7 @@ def Overlap (U : Set α) (V : Set α) : Prop :=
   (U ∩ V).Nonempty ∧ (U \ V).Nonempty ∧ (V \ U).Nonempty
 
 def does_overlap' (U : Set α) (V : Set α) (hu : ¬ U ⊆ V)
-  : (U \ V).Nonempty := Set.diff_nonempty.mpr hu
+  : (U \ V).Nonempty := Set.sdiff_nonempty.mpr hu
 
 def does_overlap (U : Set α) (V : Set α) (h : (U ∩ V).Nonempty) (hu : ¬ U ⊆ V) (hv : ¬ V ⊆ U)
   : Overlap U V := by

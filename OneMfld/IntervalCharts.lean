@@ -26,7 +26,7 @@ def univ_unbounded : ¬ Bornology.IsBounded (Set.univ : Set NNReal) := by
   -- But `univ` is not bounded above on a `NoTopOrder` type like `NNReal`.
   exact not_bddAbove_univ h'.2
 
-noncomputable instance interval_charted (ht : NicelyChartedSpace NNReal M) : IntervalChartedSpace M where
+@[instance_reducible] noncomputable def interval_charted (ht : NicelyChartedSpace NNReal M) : IntervalChartedSpace M where
   chartAt := ht.chartAt
   atlas := ht.atlas
   mem_chart_source := ht.mem_chart_source

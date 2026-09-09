@@ -33,7 +33,7 @@ lemma connected_bddAbove_subset_contains_Ioo {X : Set ℝ} {supX : ℝ} {x : ℝ
   . rcases h with ⟨z, zX, y_le_z⟩
     have : Icc x z ⊆ X := ordconn_of_connected conn x xX z zX
     exact this ⟨LT.lt.le x_lt_y, y_le_z⟩
-  . push_neg at h
+  . push Not at h
     have : y ∈ upperBounds X := fun z ↦ fun zX ↦ LT.lt.le (h z zX)
     have : supX ≤ y := h_supX.2 this
     linarith
@@ -46,7 +46,7 @@ lemma connected_bddBelow_subset_contains_Ioo {X : Set ℝ} {infX : ℝ} {x : ℝ
   . rcases h with ⟨z, zX, z_le_y⟩
     have : Icc z x ⊆ X := ordconn_of_connected conn z zX x xX
     exact this ⟨z_le_y, LT.lt.le y_lt_x⟩
-  . push_neg at h
+  . push Not at h
     have : y ∈ lowerBounds X := fun z ↦ fun zX ↦ LT.lt.le (h z zX)
     have : y ≤ infX := h_infX.2 this
     linarith
@@ -316,14 +316,14 @@ lemma interior_BoundedInterval (I : BoundedInterval)
 @[simp]
 lemma Icc_diff_Ioo {a b : ℝ} (lt : a < b) : (Icc a b) \ (Ioo a b) = {a, b} := by
   apply Subset.antisymm
-  . rw [← Icc_diff_both]
+  . rw [← Icc_sdiff_both]
     exact sdiff_sdiff_le
   . rintro x (xleft | xright)
-    . rw [mem_diff, mem_Icc, mem_Ioo, not_and]
+    . rw [mem_sdiff, mem_Icc, mem_Ioo, not_and]
       exact ⟨⟨by linarith, by linarith⟩, (by intro _; linarith)⟩
     . simp only [mem_singleton_iff] at xright
       rw [xright]
-      simp only [mem_diff, mem_Icc, le_refl, and_true, mem_Ioo, lt_self_iff_false, and_false,
+      simp only [mem_sdiff, mem_Icc, le_refl, and_true, mem_Ioo, lt_self_iff_false, and_false,
         not_false_eq_true]
       exact LT.lt.le lt
 
@@ -356,8 +356,8 @@ theorem other_endpoint
 lemma characterize_univ {X : Set ℝ} (conn : IsConnected X)
   (below : ¬ BddBelow X) (above : ¬ BddAbove X)
     : X = univ := by
-  rw [bddBelow_def] at below; push_neg at below
-  rw [bddAbove_def] at above; push_neg at above
+  rw [bddBelow_def] at below; push Not at below
+  rw [bddAbove_def] at above; push Not at above
   ext x
   simp only [mem_univ, iff_true]
   have ⟨B, BX, Bbig⟩ := above x
@@ -368,7 +368,7 @@ lemma characterize_univ {X : Set ℝ} (conn : IsConnected X)
 lemma characterize_Ioi {X : Set ℝ} (conn : IsConnected X)
     {infX : ℝ} (h_infX : IsGLB X infX) (infX_X : infX ∉ X)
     (above : ¬ BddAbove X) : X = Ioi infX := by
-  rw [bddAbove_def] at above; push_neg at above
+  rw [bddAbove_def] at above; push Not at above
   apply Subset.antisymm
   . intro x xX
     exact excluded_infX_lt_x xX h_infX infX_X
@@ -382,7 +382,7 @@ lemma characterize_Ioi {X : Set ℝ} (conn : IsConnected X)
 lemma characterize_Ici {X : Set ℝ} (conn : IsConnected X)
     {infX : ℝ} (h_infX : IsGLB X infX) (infX_X : infX ∈ X)
     (above : ¬ BddAbove X) : X = Ici infX := by
-  rw [bddAbove_def] at above; push_neg at above
+  rw [bddAbove_def] at above; push Not at above
   apply Set.Subset.antisymm
   . intro x xX
     exact h_infX.1 xX
@@ -403,7 +403,7 @@ lemma classify_Ixi {X : Set ℝ} (conn : IsConnected X)
 lemma characterize_Iio {X : Set ℝ} (conn : IsConnected X)
     {supX : ℝ} (h_supX : IsLUB X supX) (supX_X : supX ∉ X)
     (below : ¬ BddBelow X) : X = Iio supX := by
-  rw [bddBelow_def] at below; push_neg at below
+  rw [bddBelow_def] at below; push Not at below
   apply Set.Subset.antisymm
   . intro x xX
     exact x_lt_excluded_supX xX h_supX supX_X
@@ -417,7 +417,7 @@ lemma characterize_Iio {X : Set ℝ} (conn : IsConnected X)
 lemma characterize_Iic {X : Set ℝ} (conn : IsConnected X)
     {supX : ℝ} (h_supX : IsLUB X supX) (supX_X : supX ∈ X)
     (below : ¬ BddBelow X) : X = Iic supX := by
-  rw [bddBelow_def] at below; push_neg at below
+  rw [bddBelow_def] at below; push Not at below
   apply Set.Subset.antisymm
   . intro x xX
     exact h_supX.1 xX

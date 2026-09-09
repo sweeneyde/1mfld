@@ -5,21 +5,21 @@ instance : LocallyConnectedSpace Real := by infer_instance
 instance : LocallyConnectedSpace NNReal := by
   rw [locallyConnectedSpace_iff_connected_subsets]
   intro x U xU
-  rw [nhds_subtype {x : ℝ | 0 ≤ x} x] at xU
-  simp only [Set.mem_setOf_eq, NNReal.val_eq_coe, Filter.mem_comap] at xU
+  rw [NNReal.isEmbedding_coe.nhds_eq_comap x] at xU
+  simp only [Filter.mem_comap] at xU
   let ⟨t, x_t, t_U⟩ := xU
   rw [mem_nhds_iff_exists_Ioo_subset] at x_t
   let ⟨l, u, x_ul, ul_t⟩ := x_t
   rw [Set.Ioo] at x_ul
   dsimp at x_ul
   have l_lt_u : l < u := lt_trans x_ul.1 x_ul.2
-  have upos : 0 < u := lt_of_lt_of_le' (x_ul.2) (zero_le x)
+  have upos : 0 < u := lt_of_lt_of_le' (x_ul.2) x.coe_nonneg
 
   let V := {y : NNReal | l < ↑y ∧ ↑y < u}
   use V
   constructor
-  . rw [nhds_subtype {x : ℝ | 0 ≤ x} x]
-    simp only [Set.mem_setOf_eq, NNReal.val_eq_coe, Filter.mem_comap]
+  . rw [NNReal.isEmbedding_coe.nhds_eq_comap x]
+    simp only [Filter.mem_comap]
     use Set.Ioo l u
     constructor
     . exact Ioo_mem_nhds x_ul.1 x_ul.2
@@ -39,7 +39,7 @@ instance : LocallyConnectedSpace NNReal := by
       have nn₂ : 0 ≤ u := LT.lt.le upos
       have : 0 ≤ (max 0 l) + u := add_nonneg nn₁ nn₂
       exact div_nonneg this zero_le_two
-    let z' : NNReal := ⟨z, znonneg⟩
+    let z' : NNReal := NNReal.mk z znonneg
     have l_lt_z : l < z := by
       have : l ≤ max 0 l := le_max_right 0 l
       show l < (max 0 l + u) / 2
@@ -57,11 +57,12 @@ instance : LocallyConnectedSpace NNReal := by
     . exact Inseparable.joinedIn (congrArg nhds h) this yV
     rw [JoinedIn]
     let γ : Path z' y := {
-      toFun := fun t ↦ ⟨(unitInterval.symm t)*z' + t*y,
-        add_nonneg (mul_nonneg unitInterval.nonneg' znonneg) (mul_nonneg unitInterval.nonneg' (zero_le y))⟩
+      toFun := fun t ↦ NNReal.mk ((unitInterval.symm t)*z' + t*y)
+        (add_nonneg (mul_nonneg unitInterval.nonneg' znonneg)
+          (mul_nonneg unitInterval.nonneg' y.coe_nonneg))
       continuous_toFun := by
         simp only [unitInterval.coe_symm_eq]
-        rw [Metric.continuous_iff]
+        refine Metric.continuous_iff.mpr ?_
         intro s ε εpos
         let δ := ε / dist y z'
         have dyz'pos : 0 < dist y z' := dist_pos.mpr (ne_comm.mpr h)
@@ -70,10 +71,8 @@ instance : LocallyConnectedSpace NNReal := by
         constructor
         . exact δpos
         intro a a_s_near
-        rw [dist, PseudoMetricSpace.toDist, instPseudoMetricSpaceNNReal, Subtype.pseudoMetricSpace]
-        simp only [NNReal.val_eq_coe, NNReal.coe_mk]
-        rw [dist, PseudoMetricSpace.toDist, Real.pseudoMetricSpace]
-        simp only
+        rw [NNReal.dist_eq]
+        simp only [NNReal.coe_mk]
         rw [sub_mul, sub_mul, one_mul]
 
         let ans : Real := (↑a - ↑s) * (↑y - ↑z')

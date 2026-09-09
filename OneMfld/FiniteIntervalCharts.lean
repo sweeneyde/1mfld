@@ -10,7 +10,7 @@ variable
   [TopologicalSpace M]
   [CompactSpace M]
 
-noncomputable def finitely_interval_charted (ht : IntervalChartedSpace M) : FinitelyIntervalChartedSpace M := by
+@[instance_reducible] noncomputable def finitely_interval_charted (ht : IntervalChartedSpace M) : FinitelyIntervalChartedSpace M := by
   have c : { ht' : ChartedSpace NNReal M | Set.Finite ht'.atlas ∧ ht'.atlas ⊆ ht.atlas } := choose_charts
   rcases c with ⟨ ht', c1, c2 ⟩
 

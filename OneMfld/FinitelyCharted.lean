@@ -29,7 +29,7 @@ noncomputable def choose_charts [CompactSpace M] [ht : ChartedSpace H M] : { ht'
     simp only [Set.mem_iUnion, exists_prop] at this
     have hx := Classical.choose_spec this
     use Classical.choose this
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     apply And.intro
     · exact hx.1
     · dsimp [U] at hx
@@ -49,7 +49,7 @@ noncomputable def choose_charts [CompactSpace M] [ht : ChartedSpace H M] : { ht'
             exact (f x).2.2
   }
 
-  simp only [Set.mem_setOf_eq, Set.image_subset_iff]
+  simp only [Set.mem_ofPred_eq, Set.image_subset_iff]
   apply And.intro
   · exact Set.toFinite (ht.chartAt '' ↑t)
   · intro x hx
