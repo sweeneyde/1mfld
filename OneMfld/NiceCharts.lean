@@ -1,5 +1,6 @@
 import Mathlib
 import OneMfld.LocallyConnected
+import OneMfld.PartialHomeomorphHelpers
 
 variable
   {M : Type*}
@@ -41,21 +42,10 @@ noncomputable def improved_chart (φ : OpenPartialHomeomorph M NNReal) (x : M) (
         · exact OpenPartialHomeomorph.left_inv φ h
     · have bi : Bornology.IsBounded interval := Metric.isBounded_Ioo (y - 1) (y + 1)
       apply Bornology.IsBounded.subset bi
-      dsimp [φ']
       intro z hz
-      have hz' : z ∈ ↑φ.symm ⁻¹' s := Set.mem_of_mem_inter_right hz
-      dsimp [s] at hz'
-      simp only [Set.mem_preimage, Set.mem_image] at hz'
-      rcases hz' with ⟨ z', hz1, hz2 ⟩
-      have : z' = z := by
-        have this : Set.InjOn φ.symm φ.target := OpenPartialHomeomorph.injOn φ.symm
-        apply this
-        · exact Set.mem_of_mem_inter_left hz1
-        · exact Set.mem_of_mem_inter_left hz
-        exact hz2
-      rw [←this]
-      dsimp [t] at hz1
-      exact Set.mem_of_mem_inter_right hz1
+      have hz' : z ∈ φ.target ∩ ↑φ.symm ⁻¹' (↑φ.symm '' t) := hz
+      rw [restrOpen_symm_image_target φ (t := t) Set.inter_subset_left] at hz'
+      exact Set.mem_of_mem_inter_right hz'
 
   · simp only [gt_iff_lt, not_lt, nonpos_iff_eq_zero] at h0
     let interval := Set.Iio (1 : NNReal)
@@ -91,21 +81,10 @@ noncomputable def improved_chart (φ : OpenPartialHomeomorph M NNReal) (x : M) (
         rw [this]
         exact Metric.isBounded_Ico 0 1
       apply Bornology.IsBounded.subset bi
-      dsimp [φ']
       intro z hz
-      have hz' : z ∈ ↑φ.symm ⁻¹' s := Set.mem_of_mem_inter_right hz
-      dsimp [s] at hz'
-      simp only [Set.mem_preimage, Set.mem_image] at hz'
-      rcases hz' with ⟨ z', hz1, hz2 ⟩
-      have : z' = z := by
-        have this : Set.InjOn φ.symm φ.target := OpenPartialHomeomorph.injOn φ.symm
-        apply this
-        · exact Set.mem_of_mem_inter_left hz1
-        · exact Set.mem_of_mem_inter_left hz
-        exact hz2
-      rw [←this]
-      dsimp [t] at hz1
-      exact Set.mem_of_mem_inter_right hz1
+      have hz' : z ∈ φ.target ∩ ↑φ.symm ⁻¹' (↑φ.symm '' t) := hz
+      rw [restrOpen_symm_image_target φ (t := t) Set.inter_subset_left] at hz'
+      exact Set.mem_of_mem_inter_right hz'
 
 noncomputable def improved_chart' (φ : OpenPartialHomeomorph M NNReal) (x : M) (h : x ∈ φ.source) (bounded : Bornology.IsBounded φ.target) :
   { ψ : OpenPartialHomeomorph M NNReal | x ∈ ψ.source ∧ Bornology.IsBounded ψ.target ∧ ConnectedSpace ψ.target } := by
@@ -144,27 +123,8 @@ noncomputable def improved_chart' (φ : OpenPartialHomeomorph M NNReal) (x : M) 
     · dsimp [ψ]
       apply isConnected_iff_connectedSpace.mp
       dsimp [s]
-      have : (φ.target ∩ ↑φ.symm ⁻¹' (↑φ.symm '' t)) = t := by
-        have ht : t ⊆ φ.target := by exact connectedComponentIn_subset φ.target y
-        ext z
-        apply Iff.intro
-        · intro hz
-          simp only [Set.mem_inter_iff, Set.mem_preimage, Set.mem_image] at hz
-          rcases hz with ⟨hz1, ⟨z', hz2, hz3⟩ ⟩
-          have this : Set.InjOn φ.symm φ.target := OpenPartialHomeomorph.injOn φ.symm
-          have this' : z' = z := by
-            apply this
-            · apply ht
-              exact hz2
-            · exact hz1
-            exact hz3
-          rw [←this']
-          exact hz2
-        · intro hz
-          simp only [Set.mem_inter_iff, Set.mem_preimage, Set.mem_image]
-          apply And.intro
-          · exact ht hz
-          · use z
+      have : (φ.target ∩ ↑φ.symm ⁻¹' (↑φ.symm '' t)) = t :=
+        restrOpen_symm_image_target φ (t := t) (connectedComponentIn_subset φ.target y)
       rw [this]
       apply isConnected_connectedComponentIn_iff.mpr
       exact PartialEquiv.map_source φ.toPartialEquiv h
