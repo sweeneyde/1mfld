@@ -6,58 +6,16 @@ import OneMfld.NiceCharts
 import OneMfld.ClosureOverlap
 import OneMfld.RealIntervals
 import OneMfld.PartialHomeomorphHelpers
-
-structure OChart (M : Type*) [TopologicalSpace M]
-  extends OpenPartialHomeomorph M NNReal where
-  target_ioo : (∃ x y, (Set.Ioo x y = target))
-
-structure HChart (M : Type*) [TopologicalSpace M]
-  extends OpenPartialHomeomorph M NNReal where
-  target_iio : (∃ x, (Set.Iio x = target))
-
-structure IChart (M : Type*) [TopologicalSpace M]
-  extends OpenPartialHomeomorph M NNReal where
-  is_interval : (∃ x y, (Set.Ioo x y = target)) ∨ (∃ x, (Set.Iio x = target))
+import OneMfld.Charts
+import OneMfld.Outer
+import OneMfld.TransitionMono
+import OneMfld.Normalize
 
 variable
   {M : Type*}
   [TopologicalSpace M]
   [ConnectedSpace M]
   [T2Space M]
-
-def OChart.toIChart (a : OChart M) : IChart M :=
-  { a with is_interval := Or.inl a.target_ioo }
-
-def HChart.toIChart (a : HChart M) : IChart M :=
-  { a with is_interval := Or.inr a.target_iio }
-
-def Overlap (U : Set α) (V : Set α) : Prop :=
-  (U ∩ V).Nonempty ∧ (U \ V).Nonempty ∧ (V \ U).Nonempty
-
-def does_overlap' (U : Set α) (V : Set α) (hu : ¬ U ⊆ V)
-  : (U \ V).Nonempty := Set.sdiff_nonempty.mpr hu
-
-def does_overlap (U : Set α) (V : Set α) (h : (U ∩ V).Nonempty) (hu : ¬ U ⊆ V) (hv : ¬ V ⊆ U)
-  : Overlap U V := by
-    apply And.intro
-    · exact h
-    · apply And.intro
-      · exact does_overlap' U V hu
-      · exact does_overlap' V U hv
-
-def overlap_symm {U : Set α} {V : Set α} (h : Overlap U V) : Overlap V U := by
-  dsimp [Overlap] at h
-  apply And.intro
-  · exact Set.inter_nonempty_iff_exists_right.mpr h.1
-  · apply And.intro
-    · exact h.2.2
-    · exact h.2.1
-
-lemma Overlap.nonempty {U : Set α} {V : Set α} (h : Overlap U V) : (Nonempty U) ∧ (Nonempty V) := by
-  have nonempty : (U ∩ V).Nonempty := h.1
-  apply And.intro
-  · exact Set.Nonempty.to_subtype (Set.Nonempty.left nonempty)
-  · exact Set.Nonempty.to_subtype (Set.Nonempty.right nonempty)
 
 open Classical in
 /-- Turn a homeomorphism of open subtypes `A ≃ₜ B` into a partial homeomorphism `X ⇀ Y`.

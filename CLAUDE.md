@@ -84,23 +84,34 @@ Remaining sorries in `ClassifyOverlaps.lean`: `handle_h_h'''`, `handle_h_h'`, `g
 `handle_o_o`, `handle_o_h`, `handle_o_h'` — of which `Classification.lean` needs only
 `handle_o_o`, `handle_o_h`, and (via `handle_h_h`) `glue_h_h`.
 
-### Phase 1 — the structure lemma (the pivot)
+### Phase 1 — the structure lemma (the pivot) — DONE
 
-Prove in current vocabulary (`OpenPartialHomeomorph M NNReal`, `Overlap`):
+All sorry-free, on the build path (imported by `ClassifyOverlaps.lean`):
 
-> **Outer-overlap lemma.** For interval charts `a`, `b` with `Overlap a.source b.source`,
-> each connected component `W` of the overlap has `a '' W` an *outer* subinterval of
-> `a.target` (closure contains the appropriate open endpoint), and likewise in `b`.
+- `OneMfld/Charts.lean` — `OChart`/`HChart`/`IChart`, `Overlap` and its basic lemmas
+  (moved out of `ClassifyOverlaps.lean` so toolkit files can use them without an import
+  cycle), plus `chart_target_nonempty` and `{O,H,I}Chart.connected_source`.
+- `OneMfld/Outer.lean` — the **outer-overlap lemma**:
+  - component transport: `OpenPartialHomeomorph.image_connectedComponentIn`,
+    `isOpen_connectedComponentIn_chart`, `mem_connectedComponentIn_of_mem_closure`
+    (components of open sets inside a chart source are open and relatively closed);
+  - `image_component_ne_target`, and the escape theorem
+    `not_closure_image_subset_target` (compactness trap + `nonempty_closure_inter_diff`);
+  - endpoint analysis `eq_Ioo_of_closure_not_subset_Iio`,
+    `eq_end_segment_of_closure_not_subset_Ioo`;
+  - headline: `overlap_component_outer_Iio` (H-chart: each overlap component's image is
+    `Ioo p v`) and `overlap_component_outer_Ioo` (O-chart: `Ioo p v` or `Ioo u q`).
+- `OneMfld/TransitionMono.lean` — `strictMonoOn_or_strictAntiOn_of_injOn_Ioo` (direct
+  from mathlib's `ContinuousOn.strictMonoOn_of_injOn_Ioo`; no ℝ-transfer needed),
+  `tendsto_top/bot_of_strictMonoOn_image` (monotone maps send ends to ends, via
+  `MonotoneOn.tendsto_nhdsWithin_Ioo_left/right` + `csSup_Ioo`/`csInf_Ioo`).
+- `OneMfld/Normalize.lean` — `NNReal.mulHomeomorph`, `affineIooOPH` (`Ioo u v ≃ Ioo 0 1`),
+  `reflectIooOPH` (`x ↦ 1 - x` on `Ioo 0 1`), and chart-level `HChart.rescale`
+  (target ↦ `Iio 1`), `OChart.rescale` (target ↦ `Ioo 0 1`), `OChart.flip` — all
+  preserving the source and recording the pointwise formula.
 
-Sources: finish `Gale.lean`'s `overlap_oo_is_outer` using `nonempty_closure_inter_diff`
-+ `RealIntervals.frontier_BoundedInterval`. Alongside:
-
-- **Monotonicity wrapper**: transition maps are strictly monotone or antitone per
-  component — mathlib's `ContinuousOn.strictMonoOn_of_injOn_Ioo`
-  (`Mathlib/Topology/Order/IntermediateValue.lean`), transported `NNReal ↔ ℝ` via the
-  `relu` toolkit; plus orientation flip `x ↦ c - x`.
-- **Normalization toolkit**: affine rescaling/reflection of chart targets via
-  `OpenPartialHomeomorph.transHomeomorph`, so overlap images sit at standard positions.
+Note: `Gale.lean`'s `overlap_oo_is_outer` is now fully superseded by
+`overlap_component_outer_Ioo`.
 
 ### Phase 2 — gluing (interval cases)
 
