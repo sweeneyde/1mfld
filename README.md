@@ -1,6 +1,6 @@
 # 1mflds — the classification of compact 1-manifolds, in Lean 4
 
-A complete, machine-checked proof (Lean 4 + [mathlib](https://github.com/leanprover-community/mathlib4))
+A Lean 4/[mathlib](https://github.com/leanprover-community/mathlib4) proof
 of the classification of compact connected 1-manifolds with boundary:
 
 > **Theorem** (`classification`, in `OneMfld/Classification.lean`).
