@@ -1,4 +1,6 @@
-import Mathlib
+import Mathlib.Analysis.SpecialFunctions.Complex.Circle
+import Mathlib.Geometry.Manifold.ChartedSpace
+import Mathlib.Topology.UnitInterval
 
 /-!
 # The classification of compact connected 1-manifolds
