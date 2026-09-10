@@ -143,8 +143,9 @@ alignment:
         The Prop-level statement compared by Palomar. Solution.lean derives
         it from the library's `classification` (OneMfld/Classification.lean),
         a noncomputable def producing the homeomorphism as data, of type
-        `(M ≃ₜ Circle) ⊕ (M ≃ₜ UnitInterval)`; the library's `UnitInterval`
-        is definitionally Mathlib's `unitInterval = Set.Icc (0 : ℝ) 1`.
+        `(M ≃ₜ Circle) ⊕ (M ≃ₜ UnitInterval)`. The Challenge spells the
+        interval as the subtype `{x : ℝ // 0 ≤ x ∧ x ≤ 1}`, definitionally
+        the library's `↥UnitInterval` and Mathlib's `↥unitInterval`.
 
 acknowledgements: >-
   Built on mathlib4 and Lean 4. The exposition formalized is David

@@ -1,6 +1,5 @@
 import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 import Mathlib.Geometry.Manifold.ChartedSpace
-import Mathlib.Topology.UnitInterval
 
 /-!
 # The classification of compact connected 1-manifolds
@@ -19,8 +18,10 @@ Hausdorffness is assumed separately; no countability hypothesis is needed
 because `M` is assumed compact. Connectedness (`ConnectedSpace`) includes
 nonemptiness.
 
-`Circle` is Mathlib's unit circle in `ℂ`, and `unitInterval` is
-`Set.Icc (0 : ℝ) 1`, the closed unit interval `[0, 1]`.
+`Circle` is Mathlib's unit circle in `ℂ`, and `{x : ℝ // 0 ≤ x ∧ x ≤ 1}`
+is the closed unit interval `[0, 1]` as a subspace of `ℝ` (the subtype
+spelling of Mathlib's `unitInterval`, written out so the statement is
+self-contained).
 -/
 
 /-- **The classification of compact connected 1-manifolds (with boundary).**
@@ -30,5 +31,5 @@ interval `[0, 1]`. -/
 theorem OneMfld.homeomorph_circle_or_unitInterval
     (M : Type*) [TopologicalSpace M] [CompactSpace M] [ConnectedSpace M]
     [T2Space M] [ChartedSpace NNReal M] :
-    Nonempty (M ≃ₜ Circle) ∨ Nonempty (M ≃ₜ unitInterval) := by
+    Nonempty (M ≃ₜ Circle) ∨ Nonempty (M ≃ₜ {x : ℝ // 0 ≤ x ∧ x ≤ 1}) := by
   sorry
