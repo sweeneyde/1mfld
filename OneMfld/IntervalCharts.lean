@@ -9,13 +9,13 @@ variable
   {M : Type*}
   [TopologicalSpace M]
 
-def ioi_unbounded (x : NNReal) : ¬ Bornology.IsBounded (Set.Ioi x) := by
+theorem ioi_unbounded (x : NNReal) : ¬ Bornology.IsBounded (Set.Ioi x) := by
   intro h
   have h' : BddBelow (Set.Ioi x) ∧ BddAbove (Set.Ioi x) :=
     (isBounded_iff_bddBelow_bddAbove (s := Set.Ioi x)).1 h
   exact (not_bddAbove_Ioi x) h'.2
 
-def univ_unbounded : ¬ Bornology.IsBounded (Set.univ : Set NNReal) := by
+theorem univ_unbounded : ¬ Bornology.IsBounded (Set.univ : Set NNReal) := by
   intro h
   -- On an `IsOrderBornology`, bounded ⇔ bddBelow ∧ bddAbove.
   have h' :

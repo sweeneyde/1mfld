@@ -3,17 +3,17 @@ import Mathlib
 open Function
 open Set
 
-def ici_cap_iio_empty (y : Real) : (Ici y ∩ Iio y) = ∅ := by
+theorem ici_cap_iio_empty (y : Real) : (Ici y ∩ Iio y) = ∅ := by
     have h' : Ici y ∩ Iio y = Ico y y := rfl
     rw [h']
     simp only [lt_self_iff_false, not_false_eq_true, Ico_eq_empty]
 
-def iic_cap_ioi_empty (y : Real) : (Iic y ∩ Ioi y) = ∅ := by
+theorem iic_cap_ioi_empty (y : Real) : (Iic y ∩ Ioi y) = ∅ := by
     have h' : Iic y ∩ Ioi y = Ioc y y := Iic_inter_Ioi
     rw [h']
     simp only [lt_self_iff_false, not_false_eq_true, Ioc_eq_empty]
 
-def not_ici (U : Set Real) (y : Real) (hu : IsOpen U) : (Ici y ≠ U) := by
+theorem not_ici (U : Set Real) (y : Real) (hu : IsOpen U) : (Ici y ≠ U) := by
   by_contra h
   rw [←h] at hu
 
@@ -30,7 +30,7 @@ def not_ici (U : Set Real) (y : Real) (hu : IsOpen U) : (Ici y ≠ U) := by
   apply Set.not_nonempty_empty
   exact hr'
 
-def not_iic (U : Set Real) (y : Real) (hu : IsOpen U) : (Iic y ≠ U) := by
+theorem not_iic (U : Set Real) (y : Real) (hu : IsOpen U) : (Iic y ≠ U) := by
   by_contra h
   rw [←h] at hu
 
@@ -161,7 +161,7 @@ lemma not_ioc (U : Set Real) (x y : Real) (hu : IsOpen U) (h : Ioc x y = U) : (U
     rw [h] at h'
     tauto
 
-def not_ico (U : Set Real) (x y : Real) (hu : IsOpen U) (h : Ico x y = U) : (U = ∅) := by
+theorem not_ico (U : Set Real) (x y : Real) (hu : IsOpen U) (h : Ico x y = U) : (U = ∅) := by
   by_cases hxy : (x < y)
   · have h' : ¬ IsOpen (Ico x y)
     apply ico_not_open x y
@@ -175,7 +175,7 @@ def not_ico (U : Set Real) (x y : Real) (hu : IsOpen U) (h : Ico x y = U) : (U =
     rw [h] at h'
     tauto
 
-def not_icc (U : Set Real) (x y : Real) (hu : IsOpen U) (h : Icc x y = U) : (U = ∅) := by
+theorem not_icc (U : Set Real) (x y : Real) (hu : IsOpen U) (h : Icc x y = U) : (U = ∅) := by
   by_cases hxy : (x < y)
   · have h' : ¬ IsOpen (Icc x y)
     apply icc_not_open x y
@@ -204,7 +204,7 @@ def not_icc (U : Set Real) (x y : Real) (hu : IsOpen U) (h : Icc x y = U) : (U =
       have c : ¬ IsOpen {x} := not_isOpen_singleton x
       tauto
 
-def classify_intervals (U : Set Real) (hu : IsOpen U) (hc : IsPreconnected U) :
+theorem classify_intervals (U : Set Real) (hu : IsOpen U) (hc : IsPreconnected U) :
   (∃ x y, (Set.Ioo x y = U)) ∨
   (∃ (x : Real), (U = Set.Iio x)) ∨
   (∃ (x : Real), (Set.Ioi x = U)) ∨

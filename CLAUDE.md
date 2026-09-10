@@ -45,17 +45,10 @@ Sorry-free but **not yet imported** anywhere (wire these in — see Phase 0):
   `other_endpoint`, `classify_connected_reals`.
 - `OneMfld/PartialHomeomorphHelpers.lean` — chart source connected ↔ target connected.
 
-Scratch / quarry files (NOT on build path; do not fix, only mine):
-
-- `OneMfld/OldClassifyOverlaps.lean` — broken scratchpad, but contains: a **complete**
-  proof of `handle_h_h` from `handle_h_h'` (lines ~827–859: glued chart onto `[0,1]` ⟹
-  union compact ⟹ clopen ⟹ `= univ` by connectedness); a proved `IsImage`/frontier
-  block for split-point sets (lines ~648–678); a nearly complete `surj_on` for the
-  normalized H-H piecewise map.
-- `Gale.lean` — `IsOuter` and `overlap_oo_is_outer`, ~80% proved (closure-escape step
-  done via `nonempty_closure_inter_diff`; final step missing).
-- `Junk.lean`, `more-gale.lean`, `1mfld.lean`, `OneMfld/instances.lean`,
-  `OneMfld/Examples.lean` — superseded, nothing salvageable.
+The historical scratch/quarry files (`OldClassifyOverlaps.lean`, `Gale.lean`,
+`Junk.lean`, `more-gale.lean`, `1mfld.lean`, `instances.lean`, `Examples.lean`) were
+deleted after the classification was completed; their salvageable content was absorbed
+into the files above, and the tracked ones remain in git history.
 
 ## Remaining work: the plan
 
@@ -148,9 +141,7 @@ mathlib's `OpenPartialHomeomorph.piecewise` along `s := b.source ∩ b⁻¹' (Ii
 ### Phase 3 — the circle — DONE
 
 **THE CLASSIFICATION IS COMPLETE**: `#print axioms classification` yields only
-`[propext, Classical.choice, Quot.sound]` — no sorries anywhere on the build path.
-(The only remaining sorries in the repo are in the untracked scratch files
-`OneMfld/OldClassifyOverlaps.lean`, `OneMfld/instances.lean`, `OneMfld/Examples.lean`.)
+`[propext, Classical.choice, Quot.sound]` — no sorries anywhere in the repo.
 
 The circle case (`circle_of_disconnected_overlap`), sorry-free:
 
@@ -179,13 +170,10 @@ The circle case (`circle_of_disconnected_overlap`), sorry-free:
 
 ### Possible follow-ups
 
-- Delete/quarantine the dead scratch files (`OldClassifyOverlaps.lean`, `Gale.lean`,
-  `more-gale.lean`, `1mfld.lean`, `Junk.lean`, `instances.lean`, `Examples.lean`,
-  `*.lean~`) now that everything they pioneered is superseded.
-- Clean the pre-existing `linter.defProp` warnings (`def` → `theorem`) in
-  `ClassifyInterval.lean` / `IntervalCharts.lean`.
-- The converse direction (Circle and UnitInterval *are* 1-manifolds) — statements
-  sketched in dead `1mfld.lean`; would round out the classification as an iff.
+- The converse direction (Circle and UnitInterval *are* `NNReal`-charted spaces, i.e.
+  1-manifolds with boundary) — would round out the classification as an iff.
+- Extract reusable pieces (e.g. `toHomeomorphOfCompactTarget`, the component-transport
+  lemmas in `Outer.lean`, `AddCircle` arc arithmetic) for mathlib contribution.
 
 ## Conventions
 
