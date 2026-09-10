@@ -145,16 +145,47 @@ mathlib's `OpenPartialHomeomorph.piecewise` along `s := b.source ∩ b⁻¹' (Ii
   (**pattern to remember**: `def`s cannot `obtain` from `∃`/`Or` — prove existence as a
   lemma, `choose` once). `handle_h_h'''`, `handle_h_h'`, `Interval3` deleted.
 
-### Phase 3 — the circle (hardest, do last)
+### Phase 3 — the circle — DONE
 
-The one remaining sorry: `circle_of_disconnected_overlap` in `ClassifyOverlaps.lean`
-(two O-charts, `Overlap`, `¬ IsConnected (a.source ∩ b.source)` ⊢ `M ≃ₜ Circle`):
+**THE CLASSIFICATION IS COMPLETE**: `#print axioms classification` yields only
+`[propext, Classical.choice, Quot.sound]` — no sorries anywhere on the build path.
+(The only remaining sorries in the repo are in the untracked scratch files
+`OneMfld/OldClassifyOverlaps.lean`, `OneMfld/instances.lean`, `OneMfld/Examples.lean`.)
 
-- `at_most_two_components`: overlap of two O-charts has ≤ 2 components (each chart end
-  supports at most one outer component). Only exists as a comment at `Gale.lean:128`.
-- Two components ⟹ `M ≃ₜ Circle`: map the two glued arcs onto overlapping arcs of
-  `Circle` (via `Circle.exp` on intervals) and reuse the piecewise + compact-clopen
-  pattern from `handle_h_h`. (Mathlib alternatives: `AddCircle.homeomorphCircle`.)
+The circle case (`circle_of_disconnected_overlap`), sorry-free:
+
+- `OneMfld/TwoComponents.lean` — a disconnected overlap of an interior chart has
+  **exactly two components**, one at each end of each chart (`two_components_structure`,
+  `two_components_other_chart`); per-component end-matching `overlap_mono_on`/`_on'`
+  (the extra hypothesis over GlueCore's versions: the interior endpoint is not in the
+  image of the *full* overlap).
+- `OneMfld/CircleBlocks.lean` — `mobiusFun c = x/(x + c(1-x))` reparametrization of
+  `Ioo 0 1` (shrinks the lower component below any `ε`, preserving end-segment images);
+  `affineNNRealOPH` (`Ioo 0 1 ⊆ ℝ≥0 → Ioo d (d+k) ⊆ ℝ`); arc arithmetic in
+  `AddCircle 1` (window injectivity, frontier of a closed arc, closed-arc ∪ open-arc
+  covers).
+- `OneMfld/CircleGlue.lean` — `exists_circle_chart`: normalize + two components +
+  orient (`W₀` lower in `a`, upper in `b`) + Möbius-shrink both charts below `1/4`;
+  split points `ν, μ > 3/4`; slopes `kα ∈ (max((1-μ+σ)/(ν-ρ), 2/3), 1)` and
+  `kg = (1-kα(ν-ρ))/(μ-σ)` (the numeric regime that keeps both arcs shorter than the
+  period and the four separation inequalities strict); embed chart `a` as the arc
+  `(0, kα)` and chart `b` as the wrapping arc `(g0, g0+kg)` via mathlib's
+  `AddCircle.openPartialHomeomorphCoe`; glue with `piecewise` along the closed sub-arc
+  `coe '' Icc (kαρ) (kαν)` whose frontier is the two split points; target is all of
+  `AddCircle 1`.
+- `ClassifyOverlaps.lean` — `circle_of_disconnected_overlap` extracts the chart,
+  transfers along `AddCircle.homeomorphCircle` and finishes with
+  `toHomeomorphOfCompactTarget` (Circle compact, M connected T2).
+
+### Possible follow-ups
+
+- Delete/quarantine the dead scratch files (`OldClassifyOverlaps.lean`, `Gale.lean`,
+  `more-gale.lean`, `1mfld.lean`, `Junk.lean`, `instances.lean`, `Examples.lean`,
+  `*.lean~`) now that everything they pioneered is superseded.
+- Clean the pre-existing `linter.defProp` warnings (`def` → `theorem`) in
+  `ClassifyInterval.lean` / `IntervalCharts.lean`.
+- The converse direction (Circle and UnitInterval *are* 1-manifolds) — statements
+  sketched in dead `1mfld.lean`; would round out the classification as an iff.
 
 ## Conventions
 

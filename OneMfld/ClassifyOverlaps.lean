@@ -14,6 +14,9 @@ import OneMfld.GlueCore
 import OneMfld.GlueBlocks
 import OneMfld.GlueNNReal
 import OneMfld.GlueUI
+import OneMfld.TwoComponents
+import OneMfld.CircleBlocks
+import OneMfld.CircleGlue
 
 open Set
 
@@ -416,11 +419,24 @@ lemma exists_glue_o_o (a : OChart M) (b : OChart M) (h : Overlap a.source b.sour
   show f.source = a.source ∪ b.source
   rw [hfs, ha's', hb's']
 
-/-- Phase 3: a disconnected overlap of two O-charts closes `M` up into a circle. -/
+/-- A disconnected overlap of two O-charts closes `M` up into a circle: the glued chart
+of `exists_circle_chart` maps `a.source ∪ b.source` onto the whole of `AddCircle 1`;
+transfer to `Circle` and apply the compact-target argument. -/
 noncomputable def circle_of_disconnected_overlap (a : OChart M) (b : OChart M)
   (h : Overlap a.source b.source) (hc : ¬ IsConnected (a.source ∩ b.source)) :
   Homeomorph M Circle := by
-  sorry
+  have H := exists_circle_chart a b h hc
+  obtain ⟨hfs, hft⟩ := H.choose_spec
+  let f' := H.choose.transHomeomorph (AddCircle.homeomorphCircle (one_ne_zero (α := ℝ)))
+  have hfs' : f'.source = a.source ∪ b.source := hfs
+  have hft' : f'.target = Set.univ := by
+    show (AddCircle.homeomorphCircle _).symm ⁻¹' H.choose.target = Set.univ
+    rw [hft]
+    exact Set.preimage_univ
+  have hne : f'.source.Nonempty := by
+    rw [hfs']
+    exact Set.Nonempty.inl (h.1.mono Set.inter_subset_left)
+  exact f'.toHomeomorphOfCompactTarget hne hft'
 
 /-- Glue two O-charts: with a connected overlap they merge into an O-chart on the union;
 with a disconnected overlap, `M` is a circle. -/
