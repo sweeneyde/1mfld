@@ -5,8 +5,11 @@ package «OneMfld» {
   -- add any package configuration options here
 }
 
+-- Pinned to the parent of the `v4.33.1` release tag: the same source, but a
+-- commit on mathlib master (release-tag commits are not ancestors of master,
+-- which the Palomar registry requires). Toolchain accordingly `v4.33.0`.
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "v4.33.1"
+  "https://github.com/leanprover-community/mathlib4.git" @ "db584cd6d46c92f209a44c0f1c829460d327499d"
 
 @[default_target]
 lean_lib «OneMfld» {
