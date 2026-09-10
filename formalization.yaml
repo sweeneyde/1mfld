@@ -27,7 +27,7 @@ project:
 
 classification:
   arxiv: ["math.GT", "math.GN"]
-  msc2020: ["57K50", "54F65", "68V20"]
+  msc2020: ["57N99", "54F65", "68V20"]
 
 sources:
   - title: "The classification of 1-manifolds: a take-home exam"
