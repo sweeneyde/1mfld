@@ -113,24 +113,42 @@ All sorry-free, on the build path (imported by `ClassifyOverlaps.lean`):
 Note: `Gale.lean`'s `overlap_oo_is_outer` is now fully superseded by
 `overlap_component_outer_Ioo`.
 
-### Phase 2 — gluing (interval cases)
+### Phase 2 — gluing (interval cases) — DONE
 
-Use mathlib's `OpenPartialHomeomorph.piecewise`
-(`Mathlib/Topology/OpenPartialHomeomorph/Constructions.lean`) — do NOT finish the
-hand-rolled piecewise proofs in the old file. It takes exactly the `IsImage`/frontier
-data the salvaged block produces. Order:
+All three consumed gluing statements are proved; **the project's only remaining sorry is
+`circle_of_disconnected_overlap` in `ClassifyOverlaps.lean` (Phase 3)**.
 
-1. `handle_o_h` (overlap is connected here; prove that from the outer lemma).
-2. `handle_h_h'` — glue, rescale to `[0,1]` with `iccHomeoI`, package via
-   `Homeomorph.toOpenPartialHomeomorphOnOpens`; `handle_h_h` then closes via Phase 0.2.
-3. `handle_o_o`, one-component branch — same gluing, yields the `OChart`.
+The construction (uniform across cases): pick a split value `μ ∈ Ioo q 1` in chart `b`'s
+overlap image, let `m := b.symm μ`, `ρ := a m`; glue `b` with a rescaled copy of `a` via
+mathlib's `OpenPartialHomeomorph.piecewise` along `s := b.source ∩ b⁻¹' (Iic μ)`,
+`t := Iic μ` — all frontier conditions come from `IsImage.frontier` + `frontier_Iic`
+(no compactness needed). New sorry-free files:
 
-The **split point** (never constructed in any draft) falls out of the outer lemma +
-`frontier_BoundedInterval`.
+- `OneMfld/GlueCore.lean` — `overlap_connected` (the overlap of a boundary chart is
+  connected: two upper end-segments must meet); `overlap_mono`/`overlap_anti`
+  (**end-matching**: the transition map's direction is forced — pairing two interior
+  ends makes the overlap accumulate at two distinct points, contradicting T2);
+  `tendsto_top_of_strictAntiOn_image`.
+- `OneMfld/GlueBlocks.lean` — `halfOPH` (`x ↦ x/2 : Iio 1 → [0,½) ⊆ UnitInterval`),
+  `mobiusOPH k` (`x ↦ k/(x+k) : ℝ≥0 → (0,1]`, decreasing, no truncated-sub issues),
+  `frontier_UIIic`, `reflect_image_Ioo_upper/lower`.
+- `OneMfld/GlueNNReal.lean` — `glue_nnreal`: the shared O-H / O-O piecewise assembly
+  (result target `(b.target ∩ Iic μ) ∪ Ioo μ (μ/ρ)`).
+- `OneMfld/GlueUI.lean` — `glue_hh_ui`: the H-H assembly onto the whole unit interval
+  (`b` into `[0, μ/2]` via `halfOPH`, `a` into `(μ/2, 1]` via `mobiusOPH` with
+  `k = μρ/(2-μ)`).
+- `ClassifyOverlaps.lean` — consumers rewritten: helper corollaries
+  (`overlap_image_Iio/Ioo`, `hchart_overlap_connected`, `overlap_image_ne_target`),
+  orientation choosers (`OChart.exists_orient_lower/upper`, using `OChart.flip` +
+  `reflect_image_*`), and `exists_glue_h_h`/`exists_glue_o_h`/`exists_glue_o_o` as
+  Prop-level `∃`-lemmas with the `handle_*` defs extracting via `Exists.choose`
+  (**pattern to remember**: `def`s cannot `obtain` from `∃`/`Or` — prove existence as a
+  lemma, `choose` once). `handle_h_h'''`, `handle_h_h'`, `Interval3` deleted.
 
 ### Phase 3 — the circle (hardest, do last)
 
-Two-component branch of `handle_o_o`:
+The one remaining sorry: `circle_of_disconnected_overlap` in `ClassifyOverlaps.lean`
+(two O-charts, `Overlap`, `¬ IsConnected (a.source ∩ b.source)` ⊢ `M ≃ₜ Circle`):
 
 - `at_most_two_components`: overlap of two O-charts has ≤ 2 components (each chart end
   supports at most one outer component). Only exists as a comment at `Gale.lean:128`.
