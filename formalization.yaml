@@ -34,6 +34,7 @@ sources:
     authors:
       - "David Gale"
     type: "article"
+    id: "https://doi.org/10.2307/2322421"
     location: "American Mathematical Monthly 94 (1987), no. 2, 170-175"
     relationship: "formalizes"
     author_endorsement: "n/a"

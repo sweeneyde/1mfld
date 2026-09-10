@@ -1,7 +1,7 @@
-# 1mflds — the classification of compact 1-manifolds, in Lean 4
+# classifying compact connected 1-manifolds
 
-A Lean 4/[mathlib](https://github.com/leanprover-community/mathlib4) proof
-of the classification of compact connected 1-manifolds with boundary:
+A Lean 4 and [mathlib](https://github.com/leanprover-community/mathlib4) proof of
+the classification of compact connected 1-manifolds with boundary:
 
 > **Theorem** (`classification`, in `OneMfld/Classification.lean`).
 > Every compact, connected, Hausdorff topological space charted on `ℝ≥0` is
@@ -13,12 +13,13 @@ noncomputable def classification [TopologicalSpace M] [ConnectedSpace M]
     (M ≃ₜ Circle) ⊕ (M ≃ₜ ↑UnitInterval)
 ```
 
-`#print axioms classification` reports only `[propext, Classical.choice, Quot.sound]`;
-there are no `sorry`s in the repository.
+`#print axioms classification` reports only `[propext, Classical.choice, Quot.sound]`
+
+There are no `sorry`s in the repository.
 
 ## Structure of the proof
 
-Following Gale's "take-home exam" argument:
+Following [Gale's "take-home exam"](https://doi.org/10.2307/2322421) argument:
 
 1. **Normalization** (`NiceCharts`, `ClassifyInterval`, `IntervalCharts`,
    `FiniteIntervalCharts`): every chart can be shrunk so its target is an open interval
