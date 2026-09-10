@@ -12,3 +12,13 @@ require mathlib from git
 lean_lib «OneMfld» {
   -- add any library configuration options here
 }
+
+/-- Palomar statement module: `Challenge.lean` at the repository root. -/
+@[default_target]
+lean_lib «Challenge» {
+}
+
+/-- Palomar proof module: `Solution.lean` at the repository root. -/
+@[default_target]
+lean_lib «Solution» {
+}

@@ -1,0 +1,155 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+# Provenance metadata for the Lean 4 formalization of the classification of
+# compact 1-manifolds, following the mathlib-initiative formalization.yaml
+# v0.4 self-reporting format.
+version: "v0.4"
+
+project:
+  name: "The classification of compact 1-manifolds"
+  description: >-
+    A complete, machine-checked Lean 4 (mathlib) proof of the classification
+    of compact connected 1-manifolds with boundary: every compact, connected,
+    Hausdorff topological space charted on the half-line ℝ≥0 is homeomorphic
+    to the circle or to the closed unit interval [0, 1]. The statement is
+    topological (no smooth structure and no countability hypothesis; charts
+    on ℝ≥0 admit boundary points). The proof follows David Gale's
+    "take-home exam" outline: shrink to a finite atlas of interval charts,
+    then induct on the atlas size, merging two overlapping charts at each
+    step; a connected overlap glues two charts into one (two boundary charts
+    glue onto [0, 1]), while a disconnected overlap has exactly two
+    components and closes the two charts up into the circle. The library's
+    main declaration, `classification`, produces the homeomorphism as data:
+    a term of `(M ≃ₜ Circle) ⊕ (M ≃ₜ UnitInterval)`.
+  authors:
+    - name: "Jim Fowler"
+      orcid: "https://orcid.org/0000-0003-4776-1221"
+    - name: "Dennis Sweeney"
+      orcid: "https://orcid.org/0009-0008-4568-5644"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "Jim Fowler"
+
+classification:
+  arxiv: ["math.GT", "math.GN"]
+  msc2020: ["57K50", "54F65", "68V20"]
+
+sources:
+  - title: "The classification of 1-manifolds: a take-home exam"
+    authors:
+      - "David Gale"
+    type: "article"
+    location: "American Mathematical Monthly 94 (1987), no. 2, 170-175"
+    relationship: "formalizes"
+    author_endorsement: "n/a"
+    note: >-
+      Gale presents the classification of compact 1-manifolds as a sequence
+      of exercises ("a take-home exam"); the formalization follows his
+      chart-merging induction, with the details (the outer-overlap lemma,
+      end-matching of transition maps, and the explicit gluing
+      constructions) worked out here. Author endorsement is n/a: David Gale
+      died in 2008. The theorem itself is classical folklore, much older
+      than this exposition.
+
+status:
+  scope: >-
+    Formalized in full, in one direction: a compact connected Hausdorff
+    space with a `ChartedSpace NNReal` instance is homeomorphic to the
+    circle or to the closed unit interval, with the homeomorphism produced
+    as data. The converse (that the circle and the interval themselves
+    admit ℝ≥0-atlases, making the classification an iff) is not formalized.
+    The setting is topological (C⁰) manifolds with boundary; the smooth
+    case is not treated. Noncompact 1-manifolds (the line and half-line
+    cases) are not treated.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+
+automation:
+  methods:
+    - method: "manual"
+      models: []
+      framework: "n/a"
+      tool_setup: >-
+        Hand-written Lean 4 in the standard editor tooling (VS Code +
+        lean4 extension), by both authors.
+      cost:
+        wall_time: "intermittent work, January 2024 to November 2025"
+        spend_usd: "0"
+        hardware: "local machine"
+      prompting_notes: "n/a"
+    - method: "copilot"
+      models: ["gpt-5.1"]
+      framework: "ChatGPT"
+      tool_setup: >-
+        Some individual lemma proofs were generated with ChatGPT 5.1,
+        pasted in by hand, and accepted only after checking by the Lean
+        compiler (November 2025).
+      cost:
+        wall_time: "not tracked"
+        spend_usd: "subscription-based"
+        hardware: "local machine"
+      prompting_notes: "goal states pasted as prompts; proofs checked by Lean"
+    - method: "agent"
+      models: ["claude-fable-5"]
+      framework: "Claude Code (Anthropic)"
+      tool_setup: >-
+        Claude Code sessions driving lake/lean locally, operated by Jim
+        Fowler, with the plan and status tracked in the repository's
+        CLAUDE.md. These sessions completed the final phases (September
+        2026): the outer-overlap lemma, transition-map monotonicity, chart
+        normalization, the interval gluings, and the circle case.
+      cost:
+        wall_time: "sessions over 2026-09-08 to 2026-09-09"
+        spend_usd: "subscription-based"
+        hardware: "local machine"
+      prompting_notes: >-
+        High-level phase plans written into CLAUDE.md; the agent proposed
+        and checked proofs with the Lean compiler in the loop.
+  spend_usd: "not tracked"
+  notes: >-
+    The skeleton of the development (the statement, the chart normalization
+    pipeline, the induction in Classification.lean, and the classification
+    of connected subsets of ℝ and ℝ≥0) was written by hand over 2024-2025;
+    the remaining gluing lemmas were completed with AI assistance as
+    described above. Every proof, however produced, is checked by the Lean
+    kernel; per-commit provenance is in the git history.
+
+fidelity:
+  divergences: >-
+    None known at the level of the statement. Relative to Gale's exposition
+    the proof is rearranged for formalization: charts take values in ℝ≥0
+    rather than in ℝ with half-open model intervals, the "outer overlap"
+    step is proved via a compactness/closure argument, and the gluings are
+    explicit piecewise constructions rather than abstract identifications.
+
+review:
+  status: "self-assessed"
+  reviewers:
+    - "Jim Fowler"
+    - "Dennis Sweeney"
+  notes: >-
+    No independent human review of the formalization. The statement in
+    Challenge.lean was audited by the authors against the informal theorem.
+    The development is machine-checked and sorry-free; `#print axioms
+    classification` reports exactly [propext, Classical.choice, Quot.sound],
+    and Comparator independently certifies that the library proves the
+    Mathlib-only statement in Challenge.lean from those axioms.
+
+alignment:
+  namespace: "OneMfld"
+  statements:
+    - source: "Gale (1987): the classification of compact 1-manifolds"
+      lean: "OneMfld.homeomorph_circle_or_unitInterval"
+      module: "Challenge"
+      status: "proved"
+      note: >-
+        The Prop-level statement compared by Palomar. Solution.lean derives
+        it from the library's `classification` (OneMfld/Classification.lean),
+        a noncomputable def producing the homeomorphism as data, of type
+        `(M ≃ₜ Circle) ⊕ (M ≃ₜ UnitInterval)`; the library's `UnitInterval`
+        is definitionally Mathlib's `unitInterval = Set.Icc (0 : ℝ) 1`.
+
+acknowledgements: >-
+  Built on mathlib4 and the Lean 4 toolchain. The exposition formalized is
+  David Gale's Monthly article; thanks to the Lean community for tooling
+  and library support.
